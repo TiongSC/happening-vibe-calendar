@@ -1,7 +1,7 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -40,6 +40,32 @@ export const Login = () => {
     }
   };
 
+  useEffect(() => {
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_DELETED') {
+        toast({
+          title: "Account Deleted",
+          description: "Your account has been successfully deleted.",
+        });
+      } else if (event === 'PASSWORD_RECOVERY') {
+        toast({
+          title: "Password Recovery",
+          description: "Please check your email for password reset instructions.",
+        });
+      } else if (event === 'SIGNED_OUT') {
+        toast({
+          title: "Signed Out",
+          description: "You have been successfully signed out.",
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-2xl font-bold text-center mb-6">Welcome to Happening Vibe</h1>
@@ -48,28 +74,6 @@ export const Login = () => {
         appearance={{ theme: ThemeSupa }}
         theme="light"
         providers={[]}
-        onError={(error) => {
-          if (error.message.includes("Email not confirmed")) {
-            const emailMatch = error.message.match(/for user with email "(.+)"/);
-            const email = emailMatch ? emailMatch[1] : null;
-            
-            if (email) {
-              toast({
-                title: "Email Not Confirmed",
-                description: "Please check your email to verify your account.",
-                action: (
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleEmailNotConfirmed(email)}
-                    disabled={isResendingVerification}
-                  >
-                    {isResendingVerification ? "Sending..." : "Resend Verification"}
-                  </Button>
-                )
-              });
-            }
-          }
-        }}
       />
     </div>
   );
