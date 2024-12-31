@@ -7,10 +7,9 @@ interface Event {
   id: string;
   title: string;
   description: string;
-  startDate: Date;
-  endDate: Date;
-  isVIP?: boolean;
-  createdBy: string;
+  start_date: string;
+  end_date: string;
+  created_by: string;
 }
 
 interface CalendarProps {
@@ -30,8 +29,8 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
   const getEventsForDate = (date: Date) => {
     return events.filter(
       (event) =>
-        date >= new Date(event.startDate) &&
-        date <= new Date(event.endDate)
+        date >= new Date(event.start_date) &&
+        date <= new Date(event.end_date)
     );
   };
 
@@ -63,9 +62,6 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
       <div className="grid grid-cols-7 gap-1">
         {days.map((day) => {
           const dayEvents = getEventsForDate(day);
-          const vipEvents = dayEvents.filter((event) => event.isVIP);
-          const regularEvents = dayEvents.filter((event) => !event.isVIP);
-          const displayEvents = [...vipEvents, ...regularEvents].slice(0, 3);
 
           return (
             <div
@@ -81,16 +77,15 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
                 {format(day, "d")}
               </div>
               <div className="space-y-1">
-                {displayEvents.map((event) => (
+                {dayEvents.map((event) => (
                   <div
                     key={event.id}
-                    className={`text-xs truncate p-1 rounded ${
-                      event.isVIP
-                        ? "bg-secondary/20 text-secondary-foreground"
-                        : "bg-primary/10 text-primary"
-                    }`}
+                    className="text-xs p-1 rounded bg-primary/10 text-primary"
                   >
                     {event.title}
+                    <div className="text-[10px] text-gray-500">
+                      {format(new Date(event.start_date), "h:mm a")}
+                    </div>
                   </div>
                 ))}
               </div>

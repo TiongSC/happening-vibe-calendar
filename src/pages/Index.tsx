@@ -1,37 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/Calendar";
 import { EventDialog } from "@/components/EventDialog";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-
-// Mock data for initial testing
-const mockEvents = [
-  {
-    id: "1",
-    title: "VIP Event",
-    description: "A special VIP event",
-    startDate: new Date(2024, 2, 15, 10, 0),
-    endDate: new Date(2024, 2, 16, 18, 0),
-    isVIP: true,
-    createdBy: "admin",
-  },
-  {
-    id: "2",
-    title: "Regular Event",
-    description: "A regular event",
-    startDate: new Date(2024, 2, 15, 14, 0),
-    endDate: new Date(2024, 2, 15, 16, 0),
-    createdBy: "user1",
-  },
-];
+import { useAuth } from "@/components/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const Index = () => {
-  const [events, setEvents] = useState(mockEvents);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: events = [] } = useQuery({
+    queryKey: ["events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("start_date", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: {
+      title: string;
+      description: string;
+      startDate: Date;
+      endDate: Date;
+    }) => {
+      const { data, error } = await supabase.from("events").insert([
+        {
+          title: eventData.title,
+          description: eventData.description,
+          start_date: eventData.startDate.toISOString(),
+          end_date: eventData.endDate.toISOString(),
+          created_by: user?.id,
+        },
+      ]);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast({
+        title: "Event created",
+        description: "Your event has been successfully created.",
+      });
+    },
+  });
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
@@ -44,25 +71,29 @@ const Index = () => {
     startDate: Date;
     endDate: Date;
   }) => {
-    const newEvent = {
-      id: Math.random().toString(),
-      ...eventData,
-      createdBy: "user1", // This would come from auth
-    };
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create events.",
+        variant: "destructive",
+      });
+      return;
+    }
+    createEventMutation.mutate(eventData);
+    setShowCreateDialog(false);
+  };
 
-    setEvents([...events, newEvent]);
-    toast({
-      title: "Event created",
-      description: "Your event has been successfully created.",
-    });
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   const eventsForDate = (date: Date | null) =>
     date
       ? events.filter(
           (event) =>
-            date >= new Date(event.startDate) &&
-            date <= new Date(event.endDate)
+            date >= new Date(event.start_date) &&
+            date <= new Date(event.end_date)
         )
       : [];
 
@@ -73,19 +104,36 @@ const Index = () => {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-primary">Happening Vibe</h1>
             <div className="space-x-2">
-              <Button variant="outline">Sign In</Button>
-              <Button>Sign Up</Button>
+              {user ? (
+                <>
+                  <span className="text-sm text-gray-600 mr-4">
+                    Welcome, {user.email}
+                  </span>
+                  <Button variant="outline" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => navigate("/login")}>
+                    Sign In
+                  </Button>
+                  <Button onClick={() => navigate("/login")}>Sign Up</Button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6 flex justify-end">
-          <Button onClick={() => setShowCreateDialog(true)}>
-            Create Event
-          </Button>
-        </div>
+        {user && (
+          <div className="mb-6 flex justify-end">
+            <Button onClick={() => setShowCreateDialog(true)}>
+              Create Event
+            </Button>
+          </div>
+        )}
 
         <Calendar events={events} onDateClick={handleDateClick} />
 
