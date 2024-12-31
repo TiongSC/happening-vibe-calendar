@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from "date-fns";
+import { Button } from "./ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  isVIP?: boolean;
+  createdBy: string;
+}
+
+interface CalendarProps {
+  events: Event[];
+  onDateClick: (date: Date) => void;
+}
+
+export const Calendar = ({ events, onDateClick }: CalendarProps) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+
+  const getEventsForDate = (date: Date) => {
+    return events.filter(
+      (event) =>
+        date >= new Date(event.startDate) &&
+        date <= new Date(event.endDate)
+    );
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-4">
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="ghost" onClick={prevMonth}>
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+        <h2 className="text-2xl font-bold text-primary">
+          {format(currentDate, "MMMM yyyy")}
+        </h2>
+        <Button variant="ghost" onClick={nextMonth}>
+          <ChevronRight className="h-6 w-6" />
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          <div
+            key={day}
+            className="text-center font-semibold p-2 text-gray-600"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day) => {
+          const dayEvents = getEventsForDate(day);
+          const vipEvents = dayEvents.filter((event) => event.isVIP);
+          const regularEvents = dayEvents.filter((event) => !event.isVIP);
+          const displayEvents = [...vipEvents, ...regularEvents].slice(0, 3);
+
+          return (
+            <div
+              key={day.toISOString()}
+              onClick={() => onDateClick(day)}
+              className={`min-h-[100px] p-2 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
+                !isSameMonth(day, currentDate)
+                  ? "bg-gray-100 text-gray-400"
+                  : "bg-white"
+              } ${isToday(day) ? "border-primary" : "border-gray-200"}`}
+            >
+              <div className="text-right text-sm mb-1">
+                {format(day, "d")}
+              </div>
+              <div className="space-y-1">
+                {displayEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    className={`text-xs truncate p-1 rounded ${
+                      event.isVIP
+                        ? "bg-secondary/20 text-secondary-foreground"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {event.title}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
