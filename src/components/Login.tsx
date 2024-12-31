@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
 
 export const Login = () => {
   const { toast } = useToast();
@@ -42,7 +43,7 @@ export const Login = () => {
 
   useEffect(() => {
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       if (event === 'USER_DELETED') {
         toast({
           title: "Account Deleted",
@@ -66,6 +67,41 @@ export const Login = () => {
     };
   }, [toast]);
 
+  const handleAuthError = (error: AuthError) => {
+    if (error.message.includes("User already registered")) {
+      toast({
+        title: "Account Exists",
+        description: "This email is already registered. Please sign in instead.",
+        variant: "destructive"
+      });
+    } else if (error.message.includes("Email not confirmed")) {
+      const emailMatch = error.message.match(/for user with email "(.+)"/);
+      const email = emailMatch ? emailMatch[1] : null;
+      
+      if (email) {
+        toast({
+          title: "Email Not Confirmed",
+          description: "Please check your email to verify your account.",
+          action: (
+            <Button 
+              size="sm" 
+              onClick={() => handleEmailNotConfirmed(email)}
+              disabled={isResendingVerification}
+            >
+              {isResendingVerification ? "Sending..." : "Resend Verification"}
+            </Button>
+          )
+        });
+      }
+    } else {
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-2xl font-bold text-center mb-6">Welcome to Happening Vibe</h1>
@@ -74,6 +110,7 @@ export const Login = () => {
         appearance={{ theme: ThemeSupa }}
         theme="light"
         providers={[]}
+        onError={handleAuthError}
       />
     </div>
   );
