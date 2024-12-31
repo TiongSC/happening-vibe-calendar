@@ -6,10 +6,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface Event {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   start_date: string;
   end_date: string;
   created_by: string;
+  created_at: string;
 }
 
 interface CalendarProps {
