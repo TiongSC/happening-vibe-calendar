@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from "date-fns";
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from "date-fns";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -28,11 +28,14 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
   const getEventsForDate = (date: Date) => {
-    return events.filter(
-      (event) =>
-        date >= new Date(event.start_date) &&
-        date <= new Date(event.end_date)
-    );
+    return events.filter(event => {
+      const startDate = new Date(event.start_date);
+      const endDate = new Date(event.end_date);
+      return (
+        (isSameDay(date, startDate) || date >= startDate) && 
+        date <= endDate
+      );
+    });
   };
 
   return (
