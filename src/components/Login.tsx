@@ -3,7 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { AuthChangeEvent } from "@supabase/supabase-js";
 
 export const Login = () => {
   const { toast } = useToast();
@@ -41,8 +41,7 @@ export const Login = () => {
   };
 
   useEffect(() => {
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       switch (event) {
         case 'USER_DELETED':
           toast({
