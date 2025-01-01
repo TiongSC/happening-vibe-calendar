@@ -53,13 +53,50 @@ export const AuthForm = ({ view }: AuthFormProps) => {
           });
           break;
 
+        case "USER_DELETED":
+          toast({
+            title: "Account Deleted",
+            description: "Your account has been successfully deleted.",
+            duration: 3000,
+          });
+          break;
+
+        case "SIGNED_UP":
+          toast({
+            title: "Account Created",
+            description: "Your account has been successfully created. Please check your email for verification.",
+            duration: 5000,
+          });
+          break;
+
         default:
           break;
       }
     });
 
+    // Listen for auth errors
+    const authListener = supabase.auth.onError((error) => {
+      console.error("Auth error:", error); // Debug log
+      
+      let errorMessage = "An error occurred during authentication.";
+      
+      if (error.message.includes("invalid_credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Please verify your email address before signing in.";
+      }
+
+      toast({
+        title: "Authentication Error",
+        description: errorMessage,
+        duration: 5000,
+        variant: "destructive",
+      });
+    });
+
     return () => {
       subscription.unsubscribe();
+      authListener.data.subscription.unsubscribe();
     };
   }, [navigate, toast]);
 
@@ -71,6 +108,14 @@ export const AuthForm = ({ view }: AuthFormProps) => {
         style: {
           button: { background: 'rgb(59 130 246)', color: 'white' },
           anchor: { color: 'rgb(59 130 246)' },
+          message: {
+            color: 'rgb(239 68 68)',
+            backgroundColor: 'rgb(254 242 242)',
+            borderColor: 'rgb(252 165 165)',
+            padding: '1rem',
+            marginBottom: '1rem',
+            borderRadius: '0.375rem',
+          }
         }
       }}
       theme="light"
