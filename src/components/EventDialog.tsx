@@ -30,6 +30,7 @@ interface EventDialogProps {
 export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient(); //This new add
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: profiles } = useQuery({
@@ -88,6 +89,26 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       return;
     }
 
+
+      // Handle event creation this new add
+    const handleCreateEvent = async (eventData: {
+      title: string;
+      description: string;
+      startDate: Date;
+      endDate: Date;
+    }) => {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to create events.",
+          variant: "destructive",
+          duration: 3000,
+        });
+        return;
+      }
+
+      //this new add
+
     const { error } = await supabase.from('events').insert([{
       title: eventData.title,
       description: eventData.description,
@@ -109,6 +130,11 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
         description: "Event created successfully.",
         duration: 3000,
       });
+
+      // Invalidate the events query to refetch events new add
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+
+      // Close the create event dialog
       setShowCreateDialog(false);
     }
   };
@@ -123,6 +149,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     return creator?.is_vip || false;
   };
 
+  // Filter events for the selected day
   const filteredEvents = events.filter(event => isEventInDay(event, date));
 
   return (

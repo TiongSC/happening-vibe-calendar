@@ -16,53 +16,30 @@ export const Login = () => {
   const [username, setUsername] = useState("");
   const [isSignUp, setIsSignUp] = useState(location.search.includes("view=sign_up"));
 
-  const handleEmailNotConfirmed = async (email: string) => {
-    try {
-      setIsResendingVerification(true);
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email
-      });
-
-      if (error) {
-        toast({
-          title: "Verification Error",
-          description: "Unable to send verification email. Please try again later.",
-          variant: "destructive",
-          duration: 3000,
-        });
-      } else {
-        toast({
-          title: "Verification Email Sent",
-          description: "Please check your email to verify your account.",
-          duration: 3000,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again later.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    } finally {
-      setIsResendingVerification(false);
-    }
+  const handleToggleView = () => {
+    const newSignUpState = !isSignUp;
+    setIsSignUp(newSignUpState);
+    navigate(newSignUpState ? "/login?view=sign_up" : "/login", { replace: true });
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Sync the state with the URL when the component mounts or location changes
+    setIsSignUp(location.search.includes("view=sign_up"));
+  }, [location]);
+
+  useEffect(() => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
       switch (event) {
         case "SIGNED_IN":
           if (session?.user) {
             if (!session.user.email_confirmed_at) {
               handleEmailNotConfirmed(session.user.email!);
             } else {
-              if (isSignUp) {
+              if (isSignUp && username) {
                 const { error: profileError } = await supabase
-                  .from('profiles')
+                  .from("profiles")
                   .update({ username })
-                  .eq('id', session.user.id);
+                  .eq("id", session.user.id);
 
                 if (profileError) {
                   toast({
@@ -78,10 +55,11 @@ export const Login = () => {
                 description: "You have successfully signed in.",
                 duration: 3000,
               });
-              navigate("/");
+              navigate("/", { replace: true });
             }
           }
           break;
+
         case "SIGNED_OUT":
           toast({
             title: "Signed Out",
@@ -89,6 +67,7 @@ export const Login = () => {
             duration: 3000,
           });
           break;
+
         case "USER_UPDATED":
           toast({
             title: "Profile Updated",
@@ -96,20 +75,52 @@ export const Login = () => {
             duration: 3000,
           });
           break;
+
+        default:
+          break;
       }
     });
 
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe?.();
     };
   }, [navigate, toast, username, isSignUp]);
+
+  const handleEmailNotConfirmed = async (email: string) => {
+    try {
+      setIsResendingVerification(true);
+      const { error } = await supabase.auth.resend({ type: "signup", email });
+
+      if (error) {
+        toast({
+          title: "Verification Error",
+          description: error.message || "Unable to send verification email. Please try again later.",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "Verification Email Sent",
+          description: "Please check your email to verify your account.",
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again later.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <AuthHeader />
-      {isSignUp && (
-        <UsernameInput username={username} onChange={setUsername} />
-      )}
+      {isSignUp && <UsernameInput username={username} onChange={setUsername} />}
       <Auth
         supabaseClient={supabase}
         appearance={{ theme: ThemeSupa }}
@@ -117,14 +128,7 @@ export const Login = () => {
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
       />
-      <Button
-        variant="link"
-        className="mt-4 w-full"
-        onClick={() => {
-          setIsSignUp(!isSignUp);
-          navigate(isSignUp ? "/login" : "/login?view=sign_up", { replace: true });
-        }}
-      >
+      <Button variant="link" className="mt-4 w-full" onClick={handleToggleView}>
         {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
       </Button>
     </div>
