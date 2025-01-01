@@ -1,4 +1,141 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+/* Updated Contents of CreateEventDialog.tsx */
+
+import React, { useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { DateTimePicker } from '@mui/lab';
+import { Button, TextField } from '@mui/material';
+
+function CreateEventDialog({ open, onClose, onCreate }) {
+  const [title, setTitle] = useState('');
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
+  const handleCreate = () => {
+    if (startDate > endDate) {
+      alert('Start date must be before end date.');
+      return;
+    }
+
+    onCreate({ title, startDate, endDate });
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Create Event</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Event Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          fullWidth
+        />
+        <DateTimePicker
+          label="Start Date"
+          value={startDate}
+          onChange={(newValue) => setStartDate(newValue)}
+        />
+        <DateTimePicker
+          label="End Date"
+          value={endDate}
+          onChange={(newValue) => setEndDate(newValue)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleCreate} color="primary">Create</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+export default CreateEventDialog;
+
+/* Updated Contents of EventDialog.tsx */
+
+import React from 'react';
+import { Dialog, DialogTitle, DialogContent } from '@mui/material';
+
+function EventDialog({ open, event, onClose }) {
+  if (!event) return null;
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{event.title}</DialogTitle>
+      <DialogContent>
+        <p>Start: {new Date(event.startDate).toLocaleString()}</p>
+        <p>End: {new Date(event.endDate).toLocaleString()}</p>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default EventDialog;
+
+/* Updated Contents of Calendar.tsx */
+
+import React, { useState } from 'react';
+import CalendarEvent from './calendar/CalendarEvent';
+import EventDialog from './EventDialog';
+
+function Calendar({ events }) {
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+  };
+
+  return (
+    <div className="calendar">
+      {events.map((event, index) => (
+        <CalendarEvent
+          key={index}
+          event={event}
+          onClick={() => handleEventClick(event)}
+        />
+      ))}
+      <EventDialog
+        open={!!selectedEvent}
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
+    </div>
+  );
+}
+
+export default Calendar;
+
+/* Updated Contents of CalendarEvent.tsx */
+
+import React from 'react';
+
+function CalendarEvent({ event, onClick }) {
+  return (
+    <div className="calendar-event" onClick={onClick}>
+      <p>{event.title}</p>
+      <p>{new Date(event.startDate).toLocaleDateString()}</p>
+    </div>
+  );
+}
+
+export default CalendarEvent;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -129,4 +266,4 @@ export const CreateEventDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}; */
