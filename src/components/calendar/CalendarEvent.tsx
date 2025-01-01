@@ -1,26 +1,19 @@
-import React from 'react';
+import { Crown } from "lucide-react";
 
 interface CalendarEventProps {
-  event: {
-    title: string;
-    startDate: Date;
-    endDate: Date;
-  };
-  onClick: () => void;
+  title: string;
+  isVip: boolean;
 }
 
-function CalendarEvent({ event, onClick }: CalendarEventProps) {
+export const CalendarEvent = ({ title, isVip }: CalendarEventProps) => {
   return (
-    <div 
-      className="calendar-event p-2 bg-primary/10 rounded cursor-pointer hover:bg-primary/20 transition-colors"
-      onClick={onClick}
+    <div
+      className={`text-xs p-1 rounded flex items-center gap-1 ${
+        isVip ? "bg-secondary/20 text-secondary-foreground" : "bg-primary/10 text-primary"
+      }`}
     >
-      <p className="font-medium text-sm">{event.title}</p>
-      <p className="text-xs text-gray-600">
-        {new Date(event.startDate).toLocaleDateString()}
-      </p>
+      {isVip && <Crown className="h-3 w-3 fill-secondary-foreground/30" />}
+      <div className="font-medium truncate">{title}</div>
     </div>
   );
-}
-
-export default CalendarEvent;
+};

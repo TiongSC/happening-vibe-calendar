@@ -1,71 +1,4 @@
-/* Updated Contents of Calendar.tsx */
-
-import React, { useState } from 'react';
-import CalendarEvent from './calendar/CalendarEvent';
-import EventDialog from './EventDialog';
-
-function Calendar({ events }) {
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
-
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-  };
-
-  const handleDateClick = (date) => {
-    setSelectedDate(date);
-  };
-
-  const filterEventsForDate = (date) => {
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
-
-    return events.filter((event) => {
-      const eventStart = new Date(event.startDate);
-      const eventEnd = new Date(event.endDate);
-
-      eventStart.setHours(0, 0, 0, 0);
-      eventEnd.setHours(0, 0, 0, 0);
-
-      return normalizedDate >= eventStart && normalizedDate <= eventEnd;
-    });
-  };
-
-  return (
-    <div className="calendar">
-      {events.map((event, index) => (
-        <CalendarEvent
-          key={index}
-          event={event}
-          onClick={() => handleEventClick(event)}
-        />
-      ))}
-
-      {selectedDate && (
-        <div className="events-for-date">
-          <h2>Events for {selectedDate.toLocaleDateString()}</h2>
-          {filterEventsForDate(selectedDate).map((event, index) => (
-            <CalendarEvent
-              key={index}
-              event={event}
-              onClick={() => handleEventClick(event)}
-            />
-          ))}
-        </div>
-      )}
-
-      <EventDialog
-        open={!!selectedEvent}
-        event={selectedEvent}
-        onClose={() => setSelectedEvent(null)}
-      />
-    </div>
-  );
-}
-
-export default Calendar;
-
-/*import { useState } from "react";
+import { useState } from "react";
 import {
   format,
   addMonths,
@@ -159,4 +92,4 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
       </div>
     </div>
   );
-};*/
+};
