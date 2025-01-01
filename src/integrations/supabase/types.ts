@@ -23,9 +23,9 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
-          end_date: string
+          end_date?: string
           id?: string
-          start_date: string
+          start_date?: string
           title: string
         }
         Update: {
@@ -74,7 +74,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_daily_event_count: {
+        Args: {
+          user_id: string
+          check_date: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
