@@ -1,3 +1,4 @@
+
 /* Updated Contents of EventDialog.tsx */
 
 import React from 'react';
@@ -6,22 +7,18 @@ import { Dialog, DialogTitle, DialogContent } from '@mui/material';
 function EventDialog({ open, event, onClose }) {
   if (!event) return null;
 
-  console.log('Event displayed in EventDialog:', event);
-
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{event.title}</DialogTitle>
       <DialogContent>
-        <p>Start: {new Date(event.startDate).toLocaleDateString(undefined, { timeZone: 'UTC' })}</p>
-        <p>End: {new Date(event.endDate).toLocaleDateString(undefined, { timeZone: 'UTC' })}</p>
+        <p>Start: {new Date(event.startDate).toLocaleString()}</p>
+        <p>End: {new Date(event.endDate).toLocaleString()}</p>
       </DialogContent>
     </Dialog>
   );
 }
 
 export default EventDialog;
-
-
 
 
 
