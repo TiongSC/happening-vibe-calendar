@@ -21,7 +21,7 @@ export const Login = () => {
   }, [location]);
 
   useEffect(() => {
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       switch (event) {
         case "SIGNED_IN":
           if (session?.user) {
@@ -67,7 +67,7 @@ export const Login = () => {
     });
 
     return () => {
-      subscription?.unsubscribe?.();
+      subscription.unsubscribe();
     };
   }, [navigate, toast, username, isSignUp]);
 
