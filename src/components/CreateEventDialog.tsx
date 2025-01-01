@@ -4,12 +4,22 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { format } from "date-fns";
 
-function CreateEventDialog({ isOpen, onClose, onCreate }) {
+interface CreateEventDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (event: {
+    title: string;
+    startDate: Date;
+    endDate: Date;
+  }) => void;
+}
+
+export const CreateEventDialog: React.FC<CreateEventDialogProps> = ({ isOpen, onClose, onCreate }) => {
   const [title, setTitle] = useState('');
   const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
   const [endDate, setEndDate] = useState(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
 
-  const normalizeToUTC = (dateString) => {
+  const normalizeToUTC = (dateString: string) => {
     const date = new Date(dateString);
     return new Date(Date.UTC(
       date.getFullYear(),
@@ -64,6 +74,4 @@ function CreateEventDialog({ isOpen, onClose, onCreate }) {
       </DialogContent>
     </Dialog>
   );
-}
-
-export default CreateEventDialog;
+};

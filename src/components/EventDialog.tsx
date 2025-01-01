@@ -1,7 +1,23 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
-const EventDialog = ({ isOpen, event, onClose }) => {
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  created_by: string;
+  created_at: string;
+}
+
+interface EventDialogProps {
+  isOpen: boolean;
+  event: Event | null;
+  onClose: () => void;
+}
+
+export const EventDialog: React.FC<EventDialogProps> = ({ isOpen, event, onClose }) => {
   if (!event) return null;
 
   return (
@@ -12,15 +28,13 @@ const EventDialog = ({ isOpen, event, onClose }) => {
         </DialogHeader>
         <div className="mt-4 space-y-2">
           <p className="text-sm text-gray-600">
-            Start: {event.startDate ? new Date(event.startDate).toLocaleString() : "N/A"}
+            Start: {new Date(event.start_date).toLocaleString()}
           </p>
           <p className="text-sm text-gray-600">
-            End: {event.endDate ? new Date(event.endDate).toLocaleString() : "N/A"}
+            End: {new Date(event.end_date).toLocaleString()}
           </p>
         </div>
       </DialogContent>
     </Dialog>
   );
 };
-
-export default EventDialog;

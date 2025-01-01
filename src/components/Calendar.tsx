@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
 import CalendarEvent from './calendar/CalendarEvent';
-import EventDialog from './EventDialog';
+import { EventDialog } from './EventDialog';
 
-const Calendar = ({ events }) => {
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  created_by: string;
+  created_at: string;
+}
 
-  const handleEventClick = (event) => {
+interface CalendarProps {
+  events: Event[];
+  onDateClick: (date: Date) => void;
+}
+
+export const Calendar: React.FC<CalendarProps> = ({ events, onDateClick }) => {
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
   };
 
-  const handleDateClick = (date) => {
+  const handleDateClick = (date: Date) => {
     setSelectedDate(date);
+    onDateClick(date);
   };
 
-  const filterEventsForDate = (date) => {
+  const filterEventsForDate = (date: Date) => {
     const normalizedDate = new Date(date);
     normalizedDate.setHours(0, 0, 0, 0);
 
     return events.filter((event) => {
-      const eventStart = new Date(event.startDate);
-      const eventEnd = new Date(event.endDate);
+      const eventStart = new Date(event.start_date);
+      const eventEnd = new Date(event.end_date);
 
       eventStart.setHours(0, 0, 0, 0);
       eventEnd.setHours(0, 0, 0, 0);
@@ -31,9 +47,9 @@ const Calendar = ({ events }) => {
 
   return (
     <div className="calendar">
-      {events.map((event, index) => (
+      {events.map((event) => (
         <CalendarEvent
-          key={index}
+          key={event.id}
           event={event}
           onClick={() => handleEventClick(event)}
         />
@@ -42,9 +58,9 @@ const Calendar = ({ events }) => {
       {selectedDate && (
         <div className="events-for-date">
           <h2>Events for {selectedDate.toLocaleDateString()}</h2>
-          {filterEventsForDate(selectedDate).map((event, index) => (
+          {filterEventsForDate(selectedDate).map((event) => (
             <CalendarEvent
-              key={index}
+              key={event.id}
               event={event}
               onClick={() => handleEventClick(event)}
             />
@@ -60,5 +76,3 @@ const Calendar = ({ events }) => {
     </div>
   );
 };
-
-export default Calendar;
