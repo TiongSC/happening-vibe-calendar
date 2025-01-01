@@ -23,6 +23,7 @@ export const Login = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       switch (event) {
+        case "USER_UPDATED":
         case "SIGNED_IN":
           if (session?.user) {
             if (!session.user.email_confirmed_at) {
@@ -80,6 +81,15 @@ export const Login = () => {
           });
           break;
 
+        case "USER_DELETED":
+          toast({
+            title: "Account Deleted",
+            description: "Your account has been successfully deleted.",
+            duration: 3000,
+          });
+          navigate("/login", { replace: true });
+          break;
+
         default:
           break;
       }
@@ -131,6 +141,21 @@ export const Login = () => {
         theme="light"
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
+        localization={{
+          variables: {
+            sign_up: {
+              email_label: "Email",
+              password_label: "Password",
+              email_input_placeholder: "Your email",
+              password_input_placeholder: "Your password",
+              button_label: "Sign up",
+              loading_button_label: "Signing up ...",
+              social_provider_text: "Sign in with {{provider}}",
+              link_text: "Don't have an account? Sign up",
+              confirmation_text: "Check your email for the confirmation link"
+            }
+          }
+        }}
       />
       <div className="mt-4 text-center">
         <span className="text-sm text-gray-600">
