@@ -1,8 +1,11 @@
+
 /* Updated Contents of CalendarEvent.tsx */
 
 import React from 'react';
 
 function CalendarEvent({ event, onClick }) {
+  console.log('Event rendered in CalendarEvent:', event);
+
   return (
     <div className="calendar-event" onClick={onClick}>
       <p>{event.title}</p>

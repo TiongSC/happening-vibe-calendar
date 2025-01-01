@@ -1,3 +1,4 @@
+
 /* Updated Contents of Calendar.tsx */
 
 import React, { useState } from 'react';
@@ -8,6 +9,7 @@ function Calendar({ events }) {
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   const handleEventClick = (event) => {
+    console.log('Event clicked in Calendar:', event);
     setSelectedEvent(event);
   };
 

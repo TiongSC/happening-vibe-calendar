@@ -10,13 +10,25 @@ function CreateEventDialog({ open, onClose, onCreate }) {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
+  const normalizeToUTC = (date) => new Date(Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds()
+  ));
+
   const handleCreate = () => {
     if (startDate > endDate) {
       alert('Start date must be before end date.');
       return;
     }
 
-    onCreate({ title, startDate, endDate });
+    const normalizedStart = normalizeToUTC(startDate);
+    const normalizedEnd = normalizeToUTC(endDate);
+
+    onCreate({ title, startDate: normalizedStart, endDate: normalizedEnd });
     onClose();
   };
 
@@ -50,7 +62,6 @@ function CreateEventDialog({ open, onClose, onCreate }) {
 }
 
 export default CreateEventDialog;
-
 
 
 
