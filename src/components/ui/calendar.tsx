@@ -1,4 +1,88 @@
-import * as React from "react";
+/* Fixed Calendar.tsx */
+
+import React, { useState } from 'react';
+import CalendarEvent from './calendar/CalendarEvent';
+import EventDialog from './EventDialog';
+
+function Calendar({ events }) {
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const handleEventClick = (event) => {
+    try {
+      setSelectedEvent(event);
+    } catch (error) {
+      console.error("Error selecting event:", error);
+    }
+  };
+
+  const handleDateClick = (date) => {
+    try {
+      setSelectedDate(new Date(date));
+    } catch (error) {
+      console.error("Error selecting date:", error);
+    }
+  };
+
+  const filterEventsForDate = (date) => {
+    try {
+      const normalizedDate = new Date(date);
+      normalizedDate.setHours(0, 0, 0, 0);
+
+      return events.filter((event) => {
+        const eventStart = new Date(event.startDate);
+        const eventEnd = new Date(event.endDate);
+
+        eventStart.setHours(0, 0, 0, 0);
+        eventEnd.setHours(0, 0, 0, 0);
+
+        return normalizedDate >= eventStart && normalizedDate <= eventEnd;
+      });
+    } catch (error) {
+      console.error("Error filtering events:", error);
+      return [];
+    }
+  };
+
+  return (
+    <div className="calendar">
+      {events.map((event, index) => (
+        <CalendarEvent
+          key={index}
+          event={event}
+          onClick={() => handleEventClick(event)}
+        />
+      ))}
+
+      {selectedDate && (
+        <div className="events-for-date">
+          <h2>Events for {selectedDate.toLocaleDateString()}</h2>
+          {filterEventsForDate(selectedDate).map((event, index) => (
+            <CalendarEvent
+              key={index}
+              event={event}
+              onClick={() => handleEventClick(event)}
+            />
+          ))}
+        </div>
+      )}
+
+      <EventDialog
+        open={!!selectedEvent}
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
+    </div>
+  );
+}
+
+export default Calendar;
+
+
+
+
+
+/*import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 
@@ -62,3 +146,4 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
+*/

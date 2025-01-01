@@ -1,14 +1,20 @@
-/* Updated Contents of CalendarEvent.tsx */
+
+/* Fixed CalendarEvent.tsx */
 
 import React from 'react';
 
 function CalendarEvent({ event, onClick }) {
-  return (
-    <div className="calendar-event" onClick={onClick}>
-      <p>{event.title}</p>
-      <p>{new Date(event.startDate).toLocaleDateString()}</p>
-    </div>
-  );
+  try {
+    return (
+      <div className="calendar-event" onClick={onClick}>
+        <p>{event.title}</p>
+        <p>{new Date(event.startDate).toLocaleDateString()}</p>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error rendering CalendarEvent:", error);
+    return null;
+  }
 }
 
 export default CalendarEvent;
