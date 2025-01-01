@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { format, isSameDay, startOfDay, endOfDay } from "date-fns";
+import { format } from "date-fns";
 import { ScrollArea } from "./ui/scroll-area";
 import { Trash2, Crown, Plus } from "lucide-react";
 import { Button } from "./ui/button";
@@ -33,7 +33,6 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Query to get all user profiles
   const { data: profiles } = useQuery({
     queryKey: ['profiles'],
     queryFn: async () => {
@@ -47,7 +46,8 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       toast({
         title: "Error",
         description: "You don't have permission to delete this event.",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 3000,
       });
       return;
     }
@@ -61,20 +61,59 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       toast({
         title: "Error",
         description: "Failed to delete event. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 3000,
       });
     } else {
       toast({
         title: "Success",
         description: "Event deleted successfully.",
+        duration: 3000,
       });
       queryClient.invalidateQueries({ queryKey: ['events'] });
     }
   };
 
-  const onCreateEvent = async () => {
-    queryClient.invalidateQueries({ queryKey: ['events'] });
-    setShowCreateDialog(false);
+  const handleCreateEvent = async (eventData: {
+    title: string;
+    description: string;
+    startDate: Date;
+    endDate: Date;
+  }) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create events.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    const { error } = await supabase.from('events').insert([{
+      title: eventData.title,
+      description: eventData.description,
+      start_date: eventData.startDate.toISOString(),
+      end_date: eventData.endDate.toISOString(),
+      created_by: user.id,
+    }]);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Event created successfully.",
+        duration: 3000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      setShowCreateDialog(false);
+    }
   };
 
   const getUserName = (userId: string) => {
@@ -87,22 +126,6 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     return creator?.is_vip || false;
   };
 
-  // Filter and sort events for the selected date
-  const eventsForDate = events
-    .filter(event => {
-      const eventStart = startOfDay(new Date(event.start_date));
-      const eventEnd = endOfDay(new Date(event.end_date));
-      const selectedDate = startOfDay(date);
-      return selectedDate >= eventStart && selectedDate <= eventEnd;
-    })
-    .sort((a, b) => {
-      const aIsVip = isVipEvent(a);
-      const bIsVip = isVipEvent(b);
-      if (aIsVip && !bIsVip) return -1;
-      if (!aIsVip && bIsVip) return 1;
-      return 0;
-    });
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -113,10 +136,10 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
               {user && (
                 <Button 
                   onClick={() => setShowCreateDialog(true)} 
-                  className="flex items-center gap-2"
+                  size="icon"
+                  className="rounded-full"
                 >
                   <Plus className="h-4 w-4" />
-                  Create Event
                 </Button>
               )}
             </div>
@@ -126,7 +149,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
           </DialogHeader>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4">
-              {eventsForDate.map((event) => (
+              {events.map((event) => (
                 <div
                   key={event.id}
                   className={`p-4 rounded-lg ${
@@ -157,7 +180,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
                   </div>
                 </div>
               ))}
-              {eventsForDate.length === 0 && (
+              {events.length === 0 && (
                 <p className="text-center text-gray-500">No events for this date</p>
               )}
             </div>
@@ -169,7 +192,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
         <CreateEventDialog
           isOpen={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
-          onCreateEvent={onCreateEvent}
+          onCreateEvent={handleCreateEvent}
           selectedDate={date}
         />
       )}

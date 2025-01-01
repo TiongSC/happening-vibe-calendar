@@ -3,18 +3,18 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthHeader } from "./auth/AuthHeader";
 import { UsernameInput } from "./auth/UsernameInput";
 import { Button } from "./ui/button";
-import { Session } from "@supabase/supabase-js";
 
 export const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isResendingVerification, setIsResendingVerification] = useState(false);
   const [username, setUsername] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(location.search.includes("view=sign_up"));
 
   const handleEmailNotConfirmed = async (email: string) => {
     try {
@@ -28,19 +28,22 @@ export const Login = () => {
         toast({
           title: "Verification Error",
           description: "Unable to send verification email. Please try again later.",
-          variant: "destructive"
+          variant: "destructive",
+          duration: 3000,
         });
       } else {
         toast({
           title: "Verification Email Sent",
           description: "Please check your email to verify your account.",
+          duration: 3000,
         });
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Something went wrong. Please try again later.",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 3000,
       });
     } finally {
       setIsResendingVerification(false);
@@ -65,13 +68,15 @@ export const Login = () => {
                   toast({
                     title: "Error",
                     description: "Failed to set username. Please try again in account settings.",
-                    variant: "destructive"
+                    variant: "destructive",
+                    duration: 3000,
                   });
                 }
               }
               toast({
                 title: "Welcome!",
                 description: "You have successfully signed in.",
+                duration: 3000,
               });
               navigate("/");
             }
@@ -81,12 +86,14 @@ export const Login = () => {
           toast({
             title: "Signed Out",
             description: "You have been successfully signed out.",
+            duration: 3000,
           });
           break;
         case "USER_UPDATED":
           toast({
             title: "Profile Updated",
             description: "Your profile has been successfully updated.",
+            duration: 3000,
           });
           break;
       }
@@ -113,7 +120,10 @@ export const Login = () => {
       <Button
         variant="link"
         className="mt-4 w-full"
-        onClick={() => setIsSignUp(!isSignUp)}
+        onClick={() => {
+          setIsSignUp(!isSignUp);
+          navigate(isSignUp ? "/login" : "/login?view=sign_up", { replace: true });
+        }}
       >
         {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
       </Button>

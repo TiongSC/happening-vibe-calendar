@@ -92,6 +92,7 @@ const Index = () => {
         title: "Authentication required",
         description: "Please log in to create events.",
         variant: "destructive",
+        duration: 3000,
       });
       return;
     }
@@ -125,19 +126,18 @@ const Index = () => {
             >
               Happening Vibe
             </Button>
-            <div className="space-x-2">
+            <div className="flex items-center gap-4">
               {user ? (
                 <>
-                  <span className="text-sm text-gray-600 mr-4">
+                  <span className="text-sm text-gray-600">
                     Welcome, {profile?.username || user.email}
                   </span>
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
+                    size="icon"
                     onClick={() => navigate("/account-settings")}
-                    className="flex items-center gap-2"
                   >
-                    <UserCog className="h-4 w-4" />
-                    Account Settings
+                    <UserCog className="h-5 w-5" />
                   </Button>
                   <Button variant="outline" onClick={handleSignOut}>
                     Sign Out
@@ -148,7 +148,7 @@ const Index = () => {
                   <Button variant="outline" onClick={() => navigate("/login")}>
                     Sign In
                   </Button>
-                  <Button onClick={() => navigate("/login")}>Sign Up</Button>
+                  <Button onClick={() => navigate("/login?view=sign_up")}>Sign Up</Button>
                 </>
               )}
             </div>
@@ -187,21 +187,17 @@ const Index = () => {
       <footer className="bg-white border-t mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-center space-x-8">
-            <Button variant="ghost" className="flex flex-col items-center gap-1">
+            <Button variant="ghost" size="icon">
               <Info className="h-5 w-5" />
-              About Us
             </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1" onClick={() => navigate("/account-settings")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/account-settings")}>
               <User className="h-5 w-5" />
-              My Account
             </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1">
+            <Button variant="ghost" size="icon">
               <HelpCircle className="h-5 w-5" />
-              FAQ
             </Button>
-            <Button variant="ghost" className="flex flex-col items-center gap-1">
+            <Button variant="ghost" size="icon">
               <Mail className="h-5 w-5" />
-              Contact Us
             </Button>
           </div>
         </div>
