@@ -1,7 +1,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
-function EventDialog({ isOpen, event, onClose }) {
+const EventDialog = ({ isOpen, event, onClose }) => {
   if (!event) return null;
 
   return (
@@ -21,6 +21,6 @@ function EventDialog({ isOpen, event, onClose }) {
       </DialogContent>
     </Dialog>
   );
-}
+};
 
 export default EventDialog;
