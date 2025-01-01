@@ -1,4 +1,4 @@
-import { Auth, AuthChangeEvent } from "@supabase/auth-ui-react";
+import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { AuthHeader } from "./auth/AuthHeader";
 import { UsernameInput } from "./auth/UsernameInput";
+import { Button } from "./ui/button";
+import { Session } from "@supabase/supabase-js";
 
 export const Login = () => {
   const { toast } = useToast();
@@ -46,7 +48,7 @@ export const Login = () => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       switch (event) {
         case "SIGNED_IN":
           if (session?.user) {
@@ -107,11 +109,6 @@ export const Login = () => {
         theme="light"
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
-        viewOptions={{
-          signUp: {
-            showLinks: false,
-          },
-        }}
       />
       <Button
         variant="link"

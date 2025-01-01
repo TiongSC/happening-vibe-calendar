@@ -42,6 +42,41 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     },
   });
 
+  const handleDeleteEvent = async (eventId: string, createdBy: string) => {
+    if (!user || (user.id !== createdBy && !profiles?.find(p => p.id === user.id)?.is_admin)) {
+      toast({
+        title: "Error",
+        description: "You don't have permission to delete this event.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', eventId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete event. Please try again.",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Event deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+    }
+  };
+
+  const onCreateEvent = async () => {
+    queryClient.invalidateQueries({ queryKey: ['events'] });
+    setShowCreateDialog(false);
+  };
+
   const getUserName = (userId: string) => {
     const profile = profiles?.find(p => p.id === userId);
     return profile?.username || profile?.id || userId;
