@@ -81,15 +81,6 @@ export const Login = () => {
           });
           break;
 
-        case "USER_DELETED":
-          toast({
-            title: "Account Deleted",
-            description: "Your account has been successfully deleted.",
-            duration: 3000,
-          });
-          navigate("/login", { replace: true });
-          break;
-
         default:
           break;
       }
