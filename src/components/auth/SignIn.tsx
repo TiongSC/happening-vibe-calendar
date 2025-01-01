@@ -15,7 +15,7 @@ export const SignIn = () => {
         <Button
           variant="link"
           className="p-0 h-auto font-normal"
-          onClick={() => navigate("/login?view=sign_up", { replace: true })}
+          onClick={() => navigate("/sign-up", { replace: true })}
         >
           Sign up
         </Button>

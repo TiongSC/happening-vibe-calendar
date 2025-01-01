@@ -19,7 +19,7 @@ export const SignUp = () => {
         <Button
           variant="link"
           className="p-0 h-auto font-normal"
-          onClick={() => navigate("/login", { replace: true })}
+          onClick={() => navigate("/sign-in", { replace: true })}
         >
           Sign in
         </Button>
