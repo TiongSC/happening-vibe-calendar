@@ -3,12 +3,13 @@ import { Calendar } from "@/components/Calendar";
 import { EventDialog } from "@/components/EventDialog";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -17,6 +18,7 @@ const Index = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: events = [] } = useQuery({
     queryKey: ["events"],
@@ -104,11 +106,16 @@ const Index = () => {
       <Header profile={profile} />
 
       <main className="flex-1 w-full mx-auto px-4 py-8">
-        {user && (
+        {user ? (
           <div className="mb-6 flex justify-end max-w-7xl mx-auto">
             <Button onClick={() => setShowCreateDialog(true)}>
               Create Event
             </Button>
+          </div>
+        ) : (
+          <div className="mb-6 flex justify-end gap-4 max-w-7xl mx-auto">
+            <Button onClick={() => navigate("/sign-in")}>Sign In</Button>
+            <Button onClick={() => navigate("/sign-up")} variant="outline">Sign Up</Button>
           </div>
         )}
 

@@ -25,7 +25,7 @@ export const AuthForm = ({ view, username, onUsernameChange }: AuthFormProps) =>
               handleEmailNotConfirmed(session.user.email!);
             } else {
               if (view === "sign_up" && username) {
-                // Check if username already exists
+                // Check if username already exists before proceeding with sign up
                 const { data: existingUser } = await supabase
                   .from("profiles")
                   .select("username")
@@ -131,7 +131,6 @@ export const AuthForm = ({ view, username, onUsernameChange }: AuthFormProps) =>
             button_label: "Sign up",
             loading_button_label: "Signing up ...",
             social_provider_text: "Sign in with {{provider}}",
-            link_text: "Don't have an account? Sign up",
             confirmation_text: "Check your email for the confirmation link"
           },
           sign_in: {
@@ -141,8 +140,7 @@ export const AuthForm = ({ view, username, onUsernameChange }: AuthFormProps) =>
             password_input_placeholder: "Your password",
             button_label: "Sign in",
             loading_button_label: "Signing in ...",
-            social_provider_text: "Sign in with {{provider}}",
-            link_text: "Already have an account? Sign in"
+            social_provider_text: "Sign in with {{provider}}"
           }
         }
       }}
