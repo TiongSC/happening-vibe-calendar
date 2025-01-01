@@ -60,7 +60,7 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className="w-full mx-auto p-4">
       <CalendarHeader
         currentDate={currentDate}
         onPrevMonth={prevMonth}

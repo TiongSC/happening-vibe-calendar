@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/Calendar";
 import { EventDialog } from "@/components/EventDialog";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
@@ -8,7 +7,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { UserCog, Info, User, HelpCircle, Mail } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -16,7 +16,6 @@ const Index = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: events = [] } = useQuery({
@@ -100,65 +99,13 @@ const Index = () => {
     setShowCreateDialog(false);
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
-  };
-
-  const eventsForDate = (date: Date | null) =>
-    date
-      ? events.filter(
-          (event) =>
-            date >= new Date(event.start_date) &&
-            date <= new Date(event.end_date)
-        )
-      : [];
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <Button
-              variant="link"
-              className="text-3xl font-bold text-primary p-0"
-              onClick={() => navigate("/")}
-            >
-              Happening Vibe
-            </Button>
-            <div className="flex items-center gap-4">
-              {user ? (
-                <>
-                  <span className="text-sm text-gray-600">
-                    Welcome, {profile?.username || user.email}
-                  </span>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => navigate("/account-settings")}
-                  >
-                    <UserCog className="h-5 w-5" />
-                  </Button>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" onClick={() => navigate("/login")}>
-                    Sign In
-                  </Button>
-                  <Button onClick={() => navigate("/login?view=sign_up")}>Sign Up</Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header profile={profile} />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
+      <main className="flex-1 w-full mx-auto px-4 py-8">
         {user && (
-          <div className="mb-6 flex justify-end">
+          <div className="mb-6 flex justify-end max-w-7xl mx-auto">
             <Button onClick={() => setShowCreateDialog(true)}>
               Create Event
             </Button>
@@ -172,7 +119,11 @@ const Index = () => {
             isOpen={showEventDialog}
             onClose={() => setShowEventDialog(false)}
             date={selectedDate}
-            events={eventsForDate(selectedDate)}
+            events={events.filter(
+              (event) =>
+                selectedDate >= new Date(event.start_date) &&
+                selectedDate <= new Date(event.end_date)
+            )}
           />
         )}
 
@@ -184,24 +135,7 @@ const Index = () => {
         />
       </main>
 
-      <footer className="bg-white border-t mt-auto">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-center space-x-8">
-            <Button variant="ghost" size="icon">
-              <Info className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate("/account-settings")}>
-              <User className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <HelpCircle className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Mail className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
