@@ -1,217 +1,76 @@
-/* Updated Contents of CreateEventDialog.tsx */
-
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { DateTimePicker } from '@mui/lab';
-import { Button, TextField } from '@mui/material';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
 
-function CreateEventDialog({ open, onClose, onCreate }) {
+interface CreateEventDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (event: { title: string; startDate: Date; endDate: Date }) => void;
+}
+
+function CreateEventDialog({ isOpen, onClose, onCreate }: CreateEventDialogProps) {
   const [title, setTitle] = useState('');
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-
-  const normalizeToUTC = (date) => new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    date.getHours(),
-    date.getMinutes(),
-    date.getSeconds()
-  ));
+  const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd\'T\'HH:mm'));
+  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd\'T\'HH:mm'));
 
   const handleCreate = () => {
-    if (startDate > endDate) {
+    if (new Date(startDate) > new Date(endDate)) {
       alert('Start date must be before end date.');
       return;
     }
 
-    const normalizedStart = normalizeToUTC(startDate);
-    const normalizedEnd = normalizeToUTC(endDate);
-
-    onCreate({ title, startDate: normalizedStart, endDate: normalizedEnd });
+    onCreate({
+      title,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate)
+    });
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Create Event</DialogTitle>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <TextField
-          label="Event Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          fullWidth
-        />
-        <DateTimePicker
-          label="Start Date"
-          value={startDate}
-          onChange={(newValue) => setStartDate(newValue)}
-        />
-        <DateTimePicker
-          label="End Date"
-          value={endDate}
-          onChange={(newValue) => setEndDate(newValue)}
-        />
+        <DialogHeader>
+          <DialogTitle>Create Event</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <label htmlFor="title" className="text-sm font-medium">Event Title</label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter event title"
+            />
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="startDate" className="text-sm font-medium">Start Date</label>
+            <Input
+              id="startDate"
+              type="datetime-local"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <label htmlFor="endDate" className="text-sm font-medium">End Date</label>
+            <Input
+              id="endDate"
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleCreate}>Create</Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleCreate} color="primary">Create</Button>
-      </DialogActions>
     </Dialog>
   );
 }
 
 export default CreateEventDialog;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { useState } from "react";
-import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/components/AuthProvider";
-import { EventForm } from "./event/EventForm";
-
-interface CreateEventDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreateEvent: (event: {
-    title: string;
-    description: string;
-    startDate: Date;
-    endDate: Date;
-  }) => void;
-  selectedDate: Date;
-}
-
-export const CreateEventDialog = ({
-  isOpen,
-  onClose,
-  onCreateEvent,
-  selectedDate,
-}: CreateEventDialogProps) => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState(format(selectedDate, "yyyy-MM-dd"));
-  const [startTime, setStartTime] = useState("09:00");
-  const [endDate, setEndDate] = useState(format(selectedDate, "yyyy-MM-dd"));
-  const [endTime, setEndTime] = useState("17:00");
-  const { toast } = useToast();
-  const { user } = useAuth();
-
-  const { data: profile } = useQuery({
-    queryKey: ["profile", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: todayEvents = [] } = useQuery({
-    queryKey: ["todayEvents", user?.id, startDate],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const startOfDay = new Date(startDate);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(startDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      const { data } = await supabase
-        .from("events")
-        .select("*")
-        .eq("created_by", user.id)
-        .gte("start_date", startOfDay.toISOString())
-        .lte("start_date", endOfDay.toISOString());
-      return data || [];
-    },
-    enabled: !!user?.id,
-  });
-
-  const remainingEvents = profile?.is_admin ? "∞" : Math.max(0, 2 - (todayEvents?.length || 0));
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const start = new Date(`${startDate}T${startTime}`);
-    const end = new Date(`${endDate}T${endTime}`);
-    
-    if (end <= start) {
-      toast({
-        title: "Invalid date range",
-        description: "End date and time must be after start date and time.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-
-    if (!profile?.is_admin && todayEvents.length >= 2) {
-      toast({
-        title: "Event limit reached",
-        description: "You can only create 2 events per day.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-    
-    onCreateEvent({
-      title,
-      description,
-      startDate: start,
-      endDate: end,
-    });
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create New Event</DialogTitle>
-        </DialogHeader>
-        <EventForm
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-          startDate={startDate}
-          setStartDate={setStartDate}
-          startTime={startTime}
-          setStartTime={setStartTime}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          endTime={endTime}
-          setEndTime={setEndTime}
-          remainingEvents={remainingEvents}
-          onSubmit={handleSubmit}
-          onClose={onClose}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}; */
