@@ -12,7 +12,7 @@ export const UsernameInput = ({ username, onChange }: UsernameInputProps) => {
       <Input
         value={username}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter your username"
+        placeholder="Enter your usernamesss"
         required
       />
     </div>
