@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { AuthChangeEvent } from "@supabase/supabase-js";
+import { ViewType } from "@supabase/auth-ui-shared";
 
 export const Login = () => {
   const { toast } = useToast();
@@ -120,7 +121,8 @@ export const Login = () => {
         appearance={{ theme: ThemeSupa }}
         theme="light"
         providers={[]}
-        onViewChange={(view) => {
+        view={isSignUp ? "sign_up" : "sign_in"}
+        onViewChange={(view: ViewType) => {
           setIsSignUp(view === "sign_up");
         }}
       />
