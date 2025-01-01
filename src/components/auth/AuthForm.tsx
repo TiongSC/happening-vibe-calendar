@@ -15,20 +15,17 @@ export const AuthForm = ({ view }: AuthFormProps) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session); // Debug log
+      
       switch (event) {
-        case "USER_UPDATED":
         case "SIGNED_IN":
           if (session?.user) {
-            if (!session.user.email_confirmed_at) {
-              handleEmailNotConfirmed(session.user.email!);
-            } else {
-              toast({
-                title: "Welcome!",
-                description: "You have successfully signed in.",
-                duration: 3000,
-              });
-              navigate("/", { replace: true });
-            }
+            toast({
+              title: "Welcome!",
+              description: "You have successfully signed in.",
+              duration: 3000,
+            });
+            navigate("/", { replace: true });
           }
           break;
 
@@ -36,6 +33,22 @@ export const AuthForm = ({ view }: AuthFormProps) => {
           toast({
             title: "Signed Out",
             description: "You have been successfully signed out.",
+            duration: 3000,
+          });
+          break;
+
+        case "PASSWORD_RECOVERY":
+          toast({
+            title: "Password Recovery",
+            description: "Check your email for password reset instructions.",
+            duration: 5000,
+          });
+          break;
+
+        case "USER_UPDATED":
+          toast({
+            title: "Profile Updated",
+            description: "Your profile has been updated successfully.",
             duration: 3000,
           });
           break;
@@ -48,40 +61,18 @@ export const AuthForm = ({ view }: AuthFormProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast, view]);
-
-  const handleEmailNotConfirmed = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-
-      if (error) {
-        toast({
-          title: "Verification Error",
-          description: error.message || "Unable to send verification email. Please try again later.",
-          variant: "destructive",
-          duration: 3000,
-        });
-      } else {
-        toast({
-          title: "Verification Email Sent",
-          description: "Please check your email to verify your account.",
-          duration: 3000,
-        });
-      }
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again later.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
-  };
+  }, [navigate, toast]);
 
   return (
     <Auth
       supabaseClient={supabase}
-      appearance={{ theme: ThemeSupa }}
+      appearance={{ 
+        theme: ThemeSupa,
+        style: {
+          button: { background: 'rgb(59 130 246)', color: 'white' },
+          anchor: { color: 'rgb(59 130 246)' },
+        }
+      }}
       theme="light"
       providers={[]}
       view={view}
