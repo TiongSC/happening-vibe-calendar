@@ -106,7 +106,7 @@ export const EventForm = ({
         </div>
       </div>
       <p className="text-sm text-gray-500">
-        Create Event Daily Limits: {remainingEvents}
+        Create Event Limits: {remainingEvents}
       </p>
       <div className="flex justify-end space-x-2">
         <Button type="button" variant="outline" onClick={onClose}>

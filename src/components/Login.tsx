@@ -29,6 +29,25 @@ export const Login = () => {
               handleEmailNotConfirmed(session.user.email!);
             } else {
               if (isSignUp && username) {
+                // Check if username already exists
+                const { data: existingUser } = await supabase
+                  .from("profiles")
+                  .select("username")
+                  .eq("username", username)
+                  .single();
+
+                if (existingUser) {
+                  toast({
+                    title: "Username already taken",
+                    description: "Please choose a different username.",
+                    variant: "destructive",
+                    duration: 3000,
+                  });
+                  // Sign out the user so they can try again
+                  await supabase.auth.signOut();
+                  return;
+                }
+
                 const { error: profileError } = await supabase
                   .from("profiles")
                   .update({ username })
