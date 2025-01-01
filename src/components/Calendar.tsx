@@ -31,10 +31,7 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
     return events.filter(event => {
       const startDate = new Date(event.start_date);
       const endDate = new Date(event.end_date);
-      return (
-        isSameDay(date, startDate) || 
-        (date >= startDate && date <= endDate)
-      );
+      return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
     });
   };
 

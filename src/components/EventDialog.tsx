@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { format, isSameDay } from "date-fns";
 
 interface Event {
@@ -31,6 +31,9 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Events for {format(date, "MMMM d, yyyy")}</DialogTitle>
+          <DialogDescription>
+            View all events scheduled for this date
+          </DialogDescription>
         </DialogHeader>
         <div className="mt-4 space-y-4">
           {eventsForDate.map((event) => (
