@@ -86,8 +86,13 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
                     key={event.id}
                     className="text-xs p-1 rounded bg-primary/10 text-primary"
                   >
-                    {event.title}
-                    <div className="text-[10px] text-gray-500">
+                    <div className="font-medium">{event.title}</div>
+                    {isSameDay(day, new Date(event.start_date)) && event.description && (
+                      <div className="text-[10px] text-gray-600 mt-0.5 line-clamp-2">
+                        {event.description}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-gray-500 mt-0.5">
                       {format(new Date(event.start_date), "h:mm a")}
                     </div>
                   </div>
