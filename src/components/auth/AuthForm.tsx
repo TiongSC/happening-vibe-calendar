@@ -7,11 +7,9 @@ import { useEffect } from "react";
 
 interface AuthFormProps {
   view: "sign_in" | "sign_up";
-  username?: string;
-  onUsernameChange?: (value: string) => void;
 }
 
-export const AuthForm = ({ view, username, onUsernameChange }: AuthFormProps) => {
+export const AuthForm = ({ view }: AuthFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -24,40 +22,6 @@ export const AuthForm = ({ view, username, onUsernameChange }: AuthFormProps) =>
             if (!session.user.email_confirmed_at) {
               handleEmailNotConfirmed(session.user.email!);
             } else {
-              if (view === "sign_up" && username) {
-                // Check if username already exists before proceeding with sign up
-                const { data: existingUser } = await supabase
-                  .from("profiles")
-                  .select("username")
-                  .eq("username", username)
-                  .single();
-
-                if (existingUser) {
-                  toast({
-                    title: "Username already taken",
-                    description: "Please choose a different username.",
-                    variant: "destructive",
-                    duration: 3000,
-                  });
-                  // Sign out the user so they can try again
-                  await supabase.auth.signOut();
-                  return;
-                }
-
-                const { error: profileError } = await supabase
-                  .from("profiles")
-                  .update({ username })
-                  .eq("id", session.user.id);
-
-                if (profileError) {
-                  toast({
-                    title: "Error",
-                    description: "Failed to set username. Please try again in account settings.",
-                    variant: "destructive",
-                    duration: 3000,
-                  });
-                }
-              }
               toast({
                 title: "Welcome!",
                 description: "You have successfully signed in.",
@@ -84,7 +48,7 @@ export const AuthForm = ({ view, username, onUsernameChange }: AuthFormProps) =>
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast, username, view]);
+  }, [navigate, toast, view]);
 
   const handleEmailNotConfirmed = async (email: string) => {
     try {

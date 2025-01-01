@@ -17,7 +17,7 @@ const AccountSettings = () => {
 
   useEffect(() => {
     if (!user) {
-      navigate("/login");
+      navigate("/sign-in");
       return;
     }
 
