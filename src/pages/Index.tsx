@@ -45,6 +45,30 @@ const Index = () => {
     enabled: !!user?.id,
   });
 
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    setShowEventDialog(true);
+  };
+
+  const handleCreateEvent = (eventData: {
+    title: string;
+    description: string;
+    startDate: Date;
+    endDate: Date;
+  }) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create events.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+    createEventMutation.mutate(eventData);
+    setShowCreateDialog(false);
+  };
+
   const createEventMutation = useMutation({
     mutationFn: async (eventData: {
       title: string;
@@ -75,30 +99,6 @@ const Index = () => {
     },
   });
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    setShowEventDialog(true);
-  };
-
-  const handleCreateEvent = (eventData: {
-    title: string;
-    description: string;
-    startDate: Date;
-    endDate: Date;
-  }) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to create events.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-    createEventMutation.mutate(eventData);
-    setShowCreateDialog(false);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header profile={profile} />
@@ -119,11 +119,7 @@ const Index = () => {
             isOpen={showEventDialog}
             onClose={() => setShowEventDialog(false)}
             date={selectedDate}
-            events={events.filter(
-              (event) =>
-                selectedDate >= new Date(event.start_date) &&
-                selectedDate <= new Date(event.end_date)
-            )}
+            events={events}
           />
         )}
 
@@ -131,7 +127,7 @@ const Index = () => {
           isOpen={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
           onCreateEvent={handleCreateEvent}
-          selectedDate={new Date()}
+          selectedDate={selectedDate || new Date()}
         />
       </main>
 
