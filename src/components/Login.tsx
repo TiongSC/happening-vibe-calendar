@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { AuthChangeEvent } from "@supabase/supabase-js";
-import { ViewType } from "@supabase/auth-ui-shared";
+import { AuthHeader } from "./auth/AuthHeader";
+import { UsernameInput } from "./auth/UsernameInput";
 
 export const Login = () => {
   const { toast } = useToast();
@@ -99,22 +98,9 @@ export const Login = () => {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Welcome to Happening Vibe</h1>
-        <Button variant="outline" onClick={() => navigate("/")}>
-          Back to Home
-        </Button>
-      </div>
+      <AuthHeader />
       {isSignUp && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Username</label>
-          <Input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your username"
-            required
-          />
-        </div>
+        <UsernameInput username={username} onChange={setUsername} />
       )}
       <Auth
         supabaseClient={supabase}
@@ -122,8 +108,10 @@ export const Login = () => {
         theme="light"
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
-        onViewChange={(view: ViewType) => {
-          setIsSignUp(view === "sign_up");
+        onChange={(event) => {
+          if (event.view) {
+            setIsSignUp(event.view === "sign_up");
+          }
         }}
       />
     </div>
