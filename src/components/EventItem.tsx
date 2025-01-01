@@ -49,7 +49,7 @@ export const EventItem = ({
           </Button>
         )}
       </div>
-      <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+      <p className="text-sm text-gray-600 mb-2 whitespace-pre-wrap break-words">{event.description}</p>
       <div className="text-xs text-gray-500">
         <p>
           Duration: {format(new Date(event.start_date), "MMM d, yyyy h:mm a")} -{" "}
