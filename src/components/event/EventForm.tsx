@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface EventFormProps {
   title: string;
@@ -37,8 +38,39 @@ export const EventForm = ({
   onSubmit,
   onClose,
 }: EventFormProps) => {
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (remainingEvents !== "∞" && remainingEvents <= 0) {
+      toast({
+        title: "Event Creation Limit Reached",
+        description: "You have reached your daily event creation limit.",
+        duration: 3000,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const startDateTime = new Date(`${startDate}T${startTime}`);
+    const endDateTime = new Date(`${endDate}T${endTime}`);
+
+    if (endDateTime <= startDateTime) {
+      toast({
+        title: "Invalid Date Range",
+        description: "End date and time must be after start date and time.",
+        duration: 3000,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onSubmit(e);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium mb-1">Title</label>
         <Input
@@ -106,13 +138,18 @@ export const EventForm = ({
         </div>
       </div>
       <p className="text-sm text-gray-500">
-        Create Event Limits: {remainingEvents}
+        Events remaining today: {remainingEvents}
       </p>
       <div className="flex justify-end space-x-2">
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit">Create</Button>
+        <Button 
+          type="submit" 
+          disabled={remainingEvents !== "∞" && remainingEvents <= 0}
+        >
+          Create
+        </Button>
       </div>
     </form>
   );

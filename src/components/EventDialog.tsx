@@ -23,7 +23,7 @@ interface EventDialogProps {
   onClose: () => void;
   date: Date;
   events: Event[];
-  onCreateClick: () => void;
+  onCreateClick: (date: Date) => void;
   onDeleteEvent: (eventId: string) => void;
 }
 
@@ -86,7 +86,7 @@ export const EventDialog = ({
               Events for {format(date, "MMMM d, yyyy")}
             </div>
             <Button 
-              onClick={onCreateClick} 
+              onClick={() => onCreateClick(date)} 
               size="icon"
               className="rounded-full mr-8"
             >

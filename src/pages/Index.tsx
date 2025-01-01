@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { format } from "date-fns";
 
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -48,6 +49,12 @@ const Index = () => {
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
     setShowEventDialog(true);
+  };
+
+  const handleCreateClick = (date: Date) => {
+    setSelectedDate(date);
+    setShowEventDialog(false);
+    setShowCreateDialog(true);
   };
 
   const createEventMutation = useMutation({
@@ -122,7 +129,7 @@ const Index = () => {
             onClose={() => setShowEventDialog(false)}
             date={selectedDate}
             events={events}
-            onCreateClick={() => setShowCreateDialog(true)}
+            onCreateClick={handleCreateClick}
             onDeleteEvent={(eventId) => deleteEventMutation.mutate(eventId)}
           />
         )}
