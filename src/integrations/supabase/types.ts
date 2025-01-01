@@ -41,21 +41,30 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birthday: string | null
           created_at: string
           id: string
+          is_admin: boolean | null
           is_vip: boolean | null
+          phone_number: string | null
           username: string | null
         }
         Insert: {
+          birthday?: string | null
           created_at?: string
           id: string
+          is_admin?: boolean | null
           is_vip?: boolean | null
+          phone_number?: string | null
           username?: string | null
         }
         Update: {
+          birthday?: string | null
           created_at?: string
           id?: string
+          is_admin?: boolean | null
           is_vip?: boolean | null
+          phone_number?: string | null
           username?: string | null
         }
         Relationships: []

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/Calendar";
 import { EventDialog } from "@/components/EventDialog";
@@ -31,6 +31,20 @@ const Index = () => {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
   const createEventMutation = useMutation({
     mutationFn: async (eventData: {
       title: string;
@@ -56,6 +70,7 @@ const Index = () => {
       toast({
         title: "Event created",
         description: "Your event has been successfully created.",
+        duration: 3000,
       });
     },
   });
@@ -102,13 +117,22 @@ const Index = () => {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-primary">Happening Vibe</h1>
+            <Button
+              variant="link"
+              className="text-3xl font-bold text-primary p-0"
+              onClick={() => navigate("/")}
+            >
+              Happening Vibe
+            </Button>
             <div className="space-x-2">
               {user ? (
                 <>
                   <span className="text-sm text-gray-600 mr-4">
-                    Welcome, {user.email}
+                    Welcome, {profile?.username || user.email}
                   </span>
+                  <Button variant="outline" onClick={() => navigate("/account-settings")}>
+                    Account Settings
+                  </Button>
                   <Button variant="outline" onClick={handleSignOut}>
                     Sign Out
                   </Button>

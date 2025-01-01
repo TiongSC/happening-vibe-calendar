@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, startOfDay, endOfDay } from "date-fns";
 import { ScrollArea } from "./ui/scroll-area";
 import { Trash2, Crown } from "lucide-react";
 import { Button } from "./ui/button";
@@ -41,7 +41,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
 
   const getUserName = (userId: string) => {
     const profile = profiles?.find(p => p.id === userId);
-    return profile?.username || userId;
+    return profile?.username || profile?.id || userId;
   };
 
   const isVipEvent = (event: Event) => {
@@ -70,9 +70,10 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
   // Filter and sort events for the selected date
   const eventsForDate = events
     .filter(event => {
-      const startDate = new Date(event.start_date);
-      const endDate = new Date(event.end_date);
-      return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
+      const eventStart = startOfDay(new Date(event.start_date));
+      const eventEnd = endOfDay(new Date(event.end_date));
+      const selectedDate = startOfDay(date);
+      return selectedDate >= eventStart && selectedDate <= eventEnd;
     })
     .sort((a, b) => {
       const aIsVip = isVipEvent(a);
@@ -83,7 +84,8 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     });
 
   const handleDeleteEvent = (eventId: string, createdBy: string) => {
-    if (user?.id !== createdBy) {
+    const userProfile = profiles?.find(p => p.id === user?.id);
+    if (user?.id !== createdBy && !userProfile?.is_admin) {
       toast({
         title: "Permission denied",
         description: "You can only delete your own events.",
@@ -119,7 +121,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
                     )}
                     <h3 className="font-semibold text-lg">{event.title}</h3>
                   </div>
-                  {user?.id === event.created_by && (
+                  {(user?.id === event.created_by || profiles?.find(p => p.id === user?.id)?.is_admin) && (
                     <Button
                       variant="ghost"
                       size="icon"
