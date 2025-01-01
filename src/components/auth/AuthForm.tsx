@@ -17,9 +17,9 @@ export const AuthForm = ({ view }: AuthFormProps) => {
           button: {
             background: "rgb(59 130 246)",
             color: "white",
-            "&:hover": {
+            '&:hover': {
               background: "rgb(29 78 216)",
-            },
+            } as any,
           },
         },
       }}
