@@ -31,13 +31,58 @@ const Index = () => {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: {
+      title: string;
+      description: string;
+      startDate: Date;
+      endDate: Date;
+    }) => {
+      const { data, error } = await supabase.from("events").insert([
+        {
+          title: eventData.title,
+          description: eventData.description,
+          start_date: eventData.startDate.toISOString(),
+          end_date: eventData.endDate.toISOString(),
+          created_by: user?.id,
+        },
+      ]);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast({
+        title: "Event created",
+        description: "Your event has been successfully created.",
+        duration: 3000,
+      });
+    },
+  });
+
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
     setShowEventDialog(true);
   };
 
-  const handleCreateEvent = async (eventData: {
+  const handleCreateEvent = (eventData: {
     title: string;
+    description: string;
     startDate: Date;
     endDate: Date;
   }) => {
@@ -50,37 +95,13 @@ const Index = () => {
       });
       return;
     }
-
-    const { error } = await supabase.from("events").insert([
-      {
-        title: eventData.title,
-        start_date: eventData.startDate.toISOString(),
-        end_date: eventData.endDate.toISOString(),
-        created_by: user.id,
-      },
-    ]);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create event. Please try again.",
-        variant: "destructive",
-        duration: 3000,
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Event created successfully.",
-        duration: 3000,
-      });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      setShowCreateDialog(false);
-    }
+    createEventMutation.mutate(eventData);
+    setShowCreateDialog(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header profile={profile} />
 
       <main className="flex-1 w-full mx-auto px-4 py-8">
         {user && (
@@ -96,15 +117,21 @@ const Index = () => {
         {selectedDate && (
           <EventDialog
             isOpen={showEventDialog}
-            event={events.find((e) => new Date(e.start_date).toDateString() === selectedDate.toDateString())}
             onClose={() => setShowEventDialog(false)}
+            date={selectedDate}
+            events={events.filter(
+              (event) =>
+                selectedDate >= new Date(event.start_date) &&
+                selectedDate <= new Date(event.end_date)
+            )}
           />
         )}
 
         <CreateEventDialog
           isOpen={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
-          onCreate={handleCreateEvent}
+          onCreateEvent={handleCreateEvent}
+          selectedDate={new Date()}
         />
       </main>
 
