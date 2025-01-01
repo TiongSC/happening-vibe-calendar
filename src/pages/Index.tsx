@@ -72,6 +72,7 @@ const Index = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      setShowCreateDialog(false);
       toast({
         title: "Event created",
         description: "Your event has been successfully created.",
@@ -91,12 +92,12 @@ const Index = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      setShowEventDialog(false);
       toast({
         title: "Event deleted",
         description: "Your event has been successfully deleted.",
         duration: 3000,
       });
-      setShowEventDialog(false);
     },
   });
 
