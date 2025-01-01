@@ -1,4 +1,31 @@
-import { Dialog, DialogContent } from "./ui/dialog";
+/* Updated Contents of EventDialog.tsx */
+
+import React from 'react';
+import { Dialog, DialogTitle, DialogContent } from '@mui/material';
+
+function EventDialog({ open, event, onClose }) {
+  if (!event) return null;
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{event.title}</DialogTitle>
+      <DialogContent>
+        <p>Start: {new Date(event.startDate).toLocaleString()}</p>
+        <p>End: {new Date(event.endDate).toLocaleString()}</p>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default EventDialog;
+
+
+
+
+
+
+
+/*import { Dialog, DialogContent } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -192,4 +219,4 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       )}
     </>
   );
-};
+}; */

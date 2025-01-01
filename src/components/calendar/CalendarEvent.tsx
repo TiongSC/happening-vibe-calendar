@@ -1,4 +1,20 @@
-import { Crown } from "lucide-react";
+/* Updated Contents of CalendarEvent.tsx */
+
+import React from 'react';
+
+function CalendarEvent({ event, onClick }) {
+  return (
+    <div className="calendar-event" onClick={onClick}>
+      <p>{event.title}</p>
+      <p>{new Date(event.startDate).toLocaleDateString()}</p>
+    </div>
+  );
+}
+
+export default CalendarEvent;
+
+
+/*import { Crown } from "lucide-react";
 
 interface CalendarEventProps {
   title: string;
@@ -16,4 +32,4 @@ export const CalendarEvent = ({ title, isVip }: CalendarEventProps) => {
       <div className="font-medium truncate">{title}</div>
     </div>
   );
-};
+};*/

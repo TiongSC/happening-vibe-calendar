@@ -1,4 +1,37 @@
-import { useState } from "react";
+/* Updated Contents of Calendar.tsx */
+
+import React, { useState } from 'react';
+import CalendarEvent from './calendar/CalendarEvent';
+import EventDialog from './EventDialog';
+
+function Calendar({ events }) {
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+  };
+
+  return (
+    <div className="calendar">
+      {events.map((event, index) => (
+        <CalendarEvent
+          key={index}
+          event={event}
+          onClick={() => handleEventClick(event)}
+        />
+      ))}
+      <EventDialog
+        open={!!selectedEvent}
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
+    </div>
+  );
+}
+
+export default Calendar;
+
+/*import { useState } from "react";
 import {
   format,
   addMonths,
@@ -92,4 +125,4 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
       </div>
     </div>
   );
-};
+};*/
