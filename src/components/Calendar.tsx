@@ -2,6 +2,8 @@ import { useState } from "react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from "date-fns";
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Event {
   id: string;
@@ -27,12 +29,26 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
+  // Query to get VIP status for all users
+  const { data: profiles } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('*');
+      return data || [];
+    },
+  });
+
   const getEventsForDate = (date: Date) => {
     return events.filter(event => {
       const startDate = new Date(event.start_date);
       const endDate = new Date(event.end_date);
       return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
     });
+  };
+
+  const isVipEvent = (event: Event) => {
+    const creator = profiles?.find(profile => profile.id === event.created_by);
+    return creator?.is_vip || false;
   };
 
   return (
@@ -78,22 +94,23 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
                 {format(day, "d")}
               </div>
               <div className="space-y-1">
-                {dayEvents.map((event) => (
+                {dayEvents.slice(0, 3).map((event) => (
                   <div
                     key={event.id}
-                    className="text-xs p-1 rounded bg-primary/10 text-primary"
+                    className={`text-xs p-1 rounded ${
+                      isVipEvent(event) 
+                        ? "bg-secondary/20 text-secondary-foreground" 
+                        : "bg-primary/10 text-primary"
+                    }`}
                   >
                     <div className="font-medium">{event.title}</div>
-                    {event.description && (
-                      <div className="text-[10px] text-gray-600 mt-0.5 line-clamp-2">
-                        {event.description}
-                      </div>
-                    )}
-                    <div className="text-[10px] text-gray-500 mt-0.5">
-                      {format(new Date(event.start_date), "h:mm a")}
-                    </div>
                   </div>
                 ))}
+                {dayEvents.length > 3 && (
+                  <div className="text-xs text-gray-500">
+                    +{dayEvents.length - 3} more
+                  </div>
+                )}
               </div>
             </div>
           );

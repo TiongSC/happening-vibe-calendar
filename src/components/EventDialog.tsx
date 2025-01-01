@@ -1,5 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { format, isSameDay } from "date-fns";
+import { ScrollArea } from "./ui/scroll-area";
+import { Trash2 } from "lucide-react";
+import { Button } from "./ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
+import { useToast } from "./ui/use-toast";
 
 interface Event {
   id: string;
@@ -19,12 +26,65 @@ interface EventDialogProps {
 }
 
 export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Query to get all user profiles
+  const { data: profiles } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('*');
+      return data || [];
+    },
+  });
+
+  // Delete event mutation
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast({
+        title: "Event deleted",
+        description: "The event has been successfully deleted.",
+      });
+    },
+  });
+
   // Filter events for the selected date
   const eventsForDate = events.filter(event => {
     const startDate = new Date(event.start_date);
     const endDate = new Date(event.end_date);
     return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
   });
+
+  const getUserName = (userId: string) => {
+    const profile = profiles?.find(p => p.id === userId);
+    return profile?.username || userId;
+  };
+
+  const isVipEvent = (event: Event) => {
+    const creator = profiles?.find(profile => profile.id === event.created_by);
+    return creator?.is_vip || false;
+  };
+
+  const handleDeleteEvent = (eventId: string, createdBy: string) => {
+    if (user?.id !== createdBy) {
+      toast({
+        title: "Permission denied",
+        description: "You can only delete your own events.",
+        variant: "destructive",
+      });
+      return;
+    }
+    deleteEventMutation.mutate(eventId);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -35,27 +95,39 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
             View all events scheduled for this date
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-4 space-y-4">
-          {eventsForDate.map((event) => (
-            <div
-              key={event.id}
-              className="p-4 rounded-lg bg-gray-50"
-            >
-              <h3 className="font-semibold text-lg mb-1">{event.title}</h3>
-              <p className="text-sm text-gray-600 mb-2">{event.description}</p>
-              <div className="text-xs text-gray-500">
-                <p>
-                  From: {format(new Date(event.start_date), "MMM d, yyyy h:mm a")}
-                </p>
-                <p>To: {format(new Date(event.end_date), "MMM d, yyyy h:mm a")}</p>
-                <p className="mt-1">Created by: {event.created_by}</p>
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-4">
+            {eventsForDate.map((event) => (
+              <div
+                key={event.id}
+                className={`p-4 rounded-lg ${
+                  isVipEvent(event) ? "bg-secondary/20" : "bg-gray-50"
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <h3 className="font-semibold text-lg mb-1">{event.title}</h3>
+                  {user?.id === event.created_by && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteEvent(event.id, event.created_by)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+                <div className="text-xs text-gray-500">
+                  <p>Duration: {format(new Date(event.start_date), "MMM d, yyyy h:mm a")} - {format(new Date(event.end_date), "MMM d, yyyy h:mm a")}</p>
+                  <p className="mt-1">Created by: {getUserName(event.created_by)}</p>
+                </div>
               </div>
-            </div>
-          ))}
-          {eventsForDate.length === 0 && (
-            <p className="text-center text-gray-500">No events for this date</p>
-          )}
-        </div>
+            ))}
+            {eventsForDate.length === 0 && (
+              <p className="text-center text-gray-500">No events for this date</p>
+            )}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
