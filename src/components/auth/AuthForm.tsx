@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { AuthError } from "@supabase/supabase-js";
 
 interface AuthFormProps {
   view: "sign_in" | "sign_up";
@@ -53,34 +54,18 @@ export const AuthForm = ({ view }: AuthFormProps) => {
           });
           break;
 
-        case "USER_DELETED":
-          toast({
-            title: "Account Deleted",
-            description: "Your account has been successfully deleted.",
-            duration: 3000,
-          });
-          break;
-
-        case "SIGNED_UP":
-          toast({
-            title: "Account Created",
-            description: "Your account has been successfully created. Please check your email for verification.",
-            duration: 5000,
-          });
-          break;
-
         default:
           break;
       }
     });
 
-    // Listen for auth errors
-    const authListener = supabase.auth.onError((error) => {
+    // Handle auth errors through the auth state change event
+    const handleAuthError = (error: AuthError) => {
       console.error("Auth error:", error); // Debug log
       
       let errorMessage = "An error occurred during authentication.";
       
-      if (error.message.includes("invalid_credentials")) {
+      if (error.message.includes("Invalid login credentials")) {
         errorMessage = "Invalid email or password. Please try again.";
       } else if (error.message.includes("Email not confirmed")) {
         errorMessage = "Please verify your email address before signing in.";
@@ -92,11 +77,21 @@ export const AuthForm = ({ view }: AuthFormProps) => {
         duration: 5000,
         variant: "destructive",
       });
+    };
+
+    // Subscribe to auth state changes
+    const authStateSubscription = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "USER_ERROR") {
+        const error = session?.error;
+        if (error) {
+          handleAuthError(error);
+        }
+      }
     });
 
     return () => {
       subscription.unsubscribe();
-      authListener.data.subscription.unsubscribe();
+      authStateSubscription.data.subscription.unsubscribe();
     };
   }, [navigate, toast]);
 
