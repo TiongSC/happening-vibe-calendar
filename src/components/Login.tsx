@@ -1,10 +1,9 @@
-import { Auth } from "@supabase/auth-ui-react";
+import { Auth, AuthChangeEvent } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { AuthChangeEvent } from "@supabase/supabase-js";
 import { AuthHeader } from "./auth/AuthHeader";
 import { UsernameInput } from "./auth/UsernameInput";
 
@@ -108,10 +107,8 @@ export const Login = () => {
         theme="light"
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
-        onChange={(event) => {
-          if (event.view) {
-            setIsSignUp(event.view === "sign_up");
-          }
+        onViewChange={(view) => {
+          setIsSignUp(view === "sign_up");
         }}
       />
     </div>
