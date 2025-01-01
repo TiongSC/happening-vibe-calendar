@@ -11,12 +11,18 @@ interface CreateEventDialogProps {
     startDate: Date;
     endDate: Date;
   }) => void;
+  selectedDate: Date;
 }
 
-export const CreateEventDialog = ({ isOpen, onClose, onCreate }: CreateEventDialogProps) => {
+export const CreateEventDialog = ({
+  isOpen,
+  onClose,
+  onCreate,
+  selectedDate,
+}: CreateEventDialogProps) => {
   const [title, setTitle] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(selectedDate);
+  const [endDate, setEndDate] = useState(selectedDate);
 
   const handleCreate = () => {
     if (startDate > endDate) {
@@ -26,6 +32,7 @@ export const CreateEventDialog = ({ isOpen, onClose, onCreate }: CreateEventDial
 
     onCreate({ title, startDate, endDate });
     onClose();
+    setTitle("");
   };
 
   return (

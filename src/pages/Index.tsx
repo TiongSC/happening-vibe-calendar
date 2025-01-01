@@ -50,36 +50,15 @@ const Index = () => {
     setShowEventDialog(true);
   };
 
-  const handleCreateEvent = (eventData: {
-    title: string;
-    description: string;
-    startDate: Date;
-    endDate: Date;
-  }) => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to create events.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-    createEventMutation.mutate(eventData);
-    setShowCreateDialog(false);
-  };
-
   const createEventMutation = useMutation({
     mutationFn: async (eventData: {
       title: string;
-      description: string;
       startDate: Date;
       endDate: Date;
     }) => {
       const { data, error } = await supabase.from("events").insert([
         {
           title: eventData.title,
-          description: eventData.description,
           start_date: eventData.startDate.toISOString(),
           end_date: eventData.endDate.toISOString(),
           created_by: user?.id,
@@ -126,7 +105,7 @@ const Index = () => {
         <CreateEventDialog
           isOpen={showCreateDialog}
           onClose={() => setShowCreateDialog(false)}
-          onCreateEvent={handleCreateEvent}
+          onCreate={createEventMutation.mutate}
           selectedDate={selectedDate || new Date()}
         />
       </main>
