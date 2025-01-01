@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
@@ -30,7 +30,7 @@ interface EventDialogProps {
 export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient(); //This new add
+  const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: profiles } = useQuery({
@@ -70,6 +70,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
         description: "Event deleted successfully.",
         duration: 3000,
       });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
     }
   };
 
@@ -89,25 +90,26 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       return;
     }
 
-
-      // Handle event creation this new add
-    const handleCreateEvent = async (eventData: {
-      title: string;
-      description: string;
-      startDate: Date;
-      endDate: Date;
-    }) => {
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to create events.",
-          variant: "destructive",
-          duration: 3000,
-        });
-        return;
+    // Check daily event creation limit
+    const { data: eventCount } = await supabase.rpc(
+      'get_user_daily_event_count',
+      { 
+        user_id: user.id,
+        check_date: eventData.startDate.toISOString().split('T')[0]
       }
+    );
 
-      //this new add
+    const isAdmin = profiles?.find(p => p.id === user.id)?.is_admin;
+
+    if (!isAdmin && eventCount >= 2) {
+      toast({
+        title: "Daily limit reached",
+        description: "You can only create 2 events per day.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
 
     const { error } = await supabase.from('events').insert([{
       title: eventData.title,
@@ -130,11 +132,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
         description: "Event created successfully.",
         duration: 3000,
       });
-
-      // Invalidate the events query to refetch events new add
       queryClient.invalidateQueries({ queryKey: ['events'] });
-
-      // Close the create event dialog
       setShowCreateDialog(false);
     }
   };

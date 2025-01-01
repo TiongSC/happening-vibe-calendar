@@ -16,14 +16,7 @@ export const Login = () => {
   const [username, setUsername] = useState("");
   const [isSignUp, setIsSignUp] = useState(location.search.includes("view=sign_up"));
 
-  const handleToggleView = () => {
-    const newSignUpState = !isSignUp;
-    setIsSignUp(newSignUpState);
-    navigate(newSignUpState ? "/login?view=sign_up" : "/login", { replace: true });
-  };
-
   useEffect(() => {
-    // Sync the state with the URL when the component mounts or location changes
     setIsSignUp(location.search.includes("view=sign_up"));
   }, [location]);
 
@@ -64,14 +57,6 @@ export const Login = () => {
           toast({
             title: "Signed Out",
             description: "You have been successfully signed out.",
-            duration: 3000,
-          });
-          break;
-
-        case "USER_UPDATED":
-          toast({
-            title: "Profile Updated",
-            description: "Your profile has been successfully updated.",
             duration: 3000,
           });
           break;
@@ -128,9 +113,18 @@ export const Login = () => {
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
       />
-      <Button variant="link" className="mt-4 w-full" onClick={handleToggleView}>
-        {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
-      </Button>
+      <div className="mt-4 text-center">
+        <span className="text-sm text-gray-600">
+          {isSignUp ? "Already have an account? " : "Don't have an account? "}
+        </span>
+        <Button
+          variant="link"
+          className="p-0 h-auto font-normal"
+          onClick={() => navigate(isSignUp ? "/login" : "/login?view=sign_up", { replace: true })}
+        >
+          {isSignUp ? "Sign in" : "Sign up"}
+        </Button>
+      </div>
     </div>
   );
 };
