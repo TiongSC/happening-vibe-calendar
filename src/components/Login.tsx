@@ -41,30 +41,30 @@ export const Login = () => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session: Session | null) => {
       switch (event) {
-        case 'USER_DELETED':
-          toast({
-            title: "Account Deleted",
-            description: "Your account has been successfully deleted.",
-          });
-          break;
-        case 'PASSWORD_RECOVERY':
-          toast({
-            title: "Password Recovery",
-            description: "Please check your email for password reset instructions.",
-          });
-          break;
-        case 'SIGNED_OUT':
+        case "SIGNED_OUT":
           toast({
             title: "Signed Out",
             description: "You have been successfully signed out.",
           });
           break;
-        case 'SIGNED_IN':
-          if (!session?.user.email_confirmed_at) {
+        case "SIGNED_IN":
+          if (session?.user && !session.user.email_confirmed_at) {
             handleEmailNotConfirmed(session.user.email!);
           }
+          break;
+        case "USER_UPDATED":
+          toast({
+            title: "Profile Updated",
+            description: "Your profile has been successfully updated.",
+          });
+          break;
+        case "PASSWORD_RECOVERY":
+          toast({
+            title: "Password Recovery",
+            description: "Please check your email for password reset instructions.",
+          });
           break;
       }
     });
