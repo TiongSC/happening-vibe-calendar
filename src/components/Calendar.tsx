@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from "date-fns";
-import { Button } from "./ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+} from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CalendarHeader } from "./calendar/CalendarHeader";
+import { CalendarDay } from "./calendar/CalendarDay";
 
 interface Event {
   id: string;
@@ -53,17 +61,11 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" onClick={prevMonth}>
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <h2 className="text-2xl font-bold text-primary">
-          {format(currentDate, "MMMM yyyy")}
-        </h2>
-        <Button variant="ghost" onClick={nextMonth}>
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      </div>
+      <CalendarHeader
+        currentDate={currentDate}
+        onPrevMonth={prevMonth}
+        onNextMonth={nextMonth}
+      />
 
       <div className="grid grid-cols-7 gap-1 mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -77,44 +79,16 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
       </div>
 
       <div className="grid grid-cols-7 gap-1">
-        {days.map((day) => {
-          const dayEvents = getEventsForDate(day);
-
-          return (
-            <div
-              key={day.toISOString()}
-              onClick={() => onDateClick(day)}
-              className={`min-h-[100px] p-2 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                !isSameMonth(day, currentDate)
-                  ? "bg-gray-100 text-gray-400"
-                  : "bg-white"
-              } ${isToday(day) ? "border-primary" : "border-gray-200"}`}
-            >
-              <div className="text-right text-sm mb-1">
-                {format(day, "d")}
-              </div>
-              <div className="space-y-1">
-                {dayEvents.slice(0, 3).map((event) => (
-                  <div
-                    key={event.id}
-                    className={`text-xs p-1 rounded ${
-                      isVipEvent(event) 
-                        ? "bg-secondary/20 text-secondary-foreground" 
-                        : "bg-primary/10 text-primary"
-                    }`}
-                  >
-                    <div className="font-medium">{event.title}</div>
-                  </div>
-                ))}
-                {dayEvents.length > 3 && (
-                  <div className="text-xs text-gray-500">
-                    +{dayEvents.length - 3} more
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {days.map((day) => (
+          <CalendarDay
+            key={day.toISOString()}
+            day={day}
+            currentDate={currentDate}
+            events={getEventsForDate(day)}
+            isVipEvent={isVipEvent}
+            onDateClick={onDateClick}
+          />
+        ))}
       </div>
     </div>
   );

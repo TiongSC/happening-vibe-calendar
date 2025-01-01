@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { useState } from "react";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateEventDialogProps {
   isOpen: boolean;
@@ -29,17 +30,33 @@ export const CreateEventDialog = ({
   const [startTime, setStartTime] = useState("09:00");
   const [endDate, setEndDate] = useState(format(selectedDate, "yyyy-MM-dd"));
   const [endTime, setEndTime] = useState("17:00");
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const start = new Date(`${startDate}T${startTime}`);
     const end = new Date(`${endDate}T${endTime}`);
     
+    if (end <= start) {
+      toast({
+        title: "Invalid date range",
+        description: "End date and time must be after start date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     onCreateEvent({
       title,
       description,
       startDate: start,
       endDate: end,
+    });
+
+    toast({
+      title: "Event created",
+      description: "Your event has been successfully created.",
+      duration: 3000,
     });
     
     onClose();

@@ -1,12 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { format, isSameDay } from "date-fns";
 import { ScrollArea } from "./ui/scroll-area";
-import { Trash2 } from "lucide-react";
+import { Trash2, Crown } from "lucide-react";
 import { Button } from "./ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface Event {
   id: string;
@@ -57,12 +57,20 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     },
   });
 
-  // Filter events for the selected date
-  const eventsForDate = events.filter(event => {
-    const startDate = new Date(event.start_date);
-    const endDate = new Date(event.end_date);
-    return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
-  });
+  // Filter and sort events for the selected date
+  const eventsForDate = events
+    .filter(event => {
+      const startDate = new Date(event.start_date);
+      const endDate = new Date(event.end_date);
+      return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
+    })
+    .sort((a, b) => {
+      const aIsVip = isVipEvent(a);
+      const bIsVip = isVipEvent(b);
+      if (aIsVip && !bIsVip) return -1;
+      if (!aIsVip && bIsVip) return 1;
+      return 0;
+    });
 
   const getUserName = (userId: string) => {
     const profile = profiles?.find(p => p.id === userId);
@@ -105,7 +113,12 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
                 }`}
               >
                 <div className="flex justify-between items-start">
-                  <h3 className="font-semibold text-lg mb-1">{event.title}</h3>
+                  <div className="flex items-center gap-2">
+                    {isVipEvent(event) && (
+                      <Crown className="h-4 w-4 fill-secondary-foreground/30" />
+                    )}
+                    <h3 className="font-semibold text-lg">{event.title}</h3>
+                  </div>
                   {user?.id === event.created_by && (
                     <Button
                       variant="ghost"
