@@ -1,13 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Textarea } from "./ui/textarea";
 import { useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { EventForm } from "./event/EventForm";
 
 interface CreateEventDialogProps {
   isOpen: boolean;
@@ -111,78 +109,23 @@ export const CreateEventDialog = ({
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value.slice(0, 50))}
-              maxLength={50}
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {50 - title.length} characters remaining
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              className="whitespace-pre-wrap break-words"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Start Date</label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Start Time</label>
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">End Date</label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">End Time</label>
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <p className="text-sm text-gray-500">
-            Events remaining today: {remainingEvents}
-          </p>
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Create Event</Button>
-          </div>
-        </form>
+        <EventForm
+          title={title}
+          setTitle={setTitle}
+          description={description}
+          setDescription={setDescription}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          startTime={startTime}
+          setStartTime={setStartTime}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          endTime={endTime}
+          setEndTime={setEndTime}
+          remainingEvents={remainingEvents}
+          onSubmit={handleSubmit}
+          onClose={onClose}
+        />
       </DialogContent>
     </Dialog>
   );

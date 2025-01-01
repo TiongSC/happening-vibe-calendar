@@ -1,8 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { format } from "date-fns";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
-import { Plus } from "lucide-react";
-import { Button } from "./ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
@@ -10,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { CreateEventDialog } from "./CreateEventDialog";
 import { EventItem } from "./EventItem";
+import { EventHeader } from "./event/EventHeader";
 import { isEventInDay } from "@/utils/dateUtils";
 
 interface Event {
@@ -131,23 +129,11 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <div className="flex justify-between items-center">
-              <DialogTitle>Events for {format(date, "MMMM d, yyyy")}</DialogTitle>
-              {user && (
-                <Button 
-                  onClick={() => setShowCreateDialog(true)} 
-                  size="icon"
-                  className="rounded-full"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <DialogDescription>
-              View all events scheduled for this date
-            </DialogDescription>
-          </DialogHeader>
+          <EventHeader
+            date={date}
+            user={user}
+            onCreateClick={() => setShowCreateDialog(true)}
+          />
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4">
               {filteredEvents.map((event) => (
