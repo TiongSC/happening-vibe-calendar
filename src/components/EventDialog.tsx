@@ -1,4 +1,5 @@
-/* Fixed EventDialog.tsx */
+
+/* Updated Contents of EventDialog.tsx */
 
 import React from 'react';
 import { Dialog, DialogTitle, DialogContent } from '@mui/material';
@@ -6,20 +7,15 @@ import { Dialog, DialogTitle, DialogContent } from '@mui/material';
 function EventDialog({ open, event, onClose }) {
   if (!event) return null;
 
-  try {
-    return (
-      <Dialog open={open} onClose={onClose}>
-        <DialogTitle>{event.title}</DialogTitle>
-        <DialogContent>
-          <p>Start: {new Date(event.startDate).toLocaleString()}</p>
-          <p>End: {new Date(event.endDate).toLocaleString()}</p>
-        </DialogContent>
-      </Dialog>
-    );
-  } catch (error) {
-    console.error("Error rendering EventDialog:", error);
-    return null;
-  }
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>{event.title}</DialogTitle>
+      <DialogContent>
+        <p>Start: {new Date(event.startDate).toLocaleString()}</p>
+        <p>End: {new Date(event.endDate).toLocaleString()}</p>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default EventDialog;
