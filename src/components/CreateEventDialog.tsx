@@ -32,7 +32,7 @@ export const CreateEventDialog = ({
   const [endTime, setEndTime] = useState("17:00");
   const { user } = useAuth();
 
-  const { data: profile } = useQuery({
+  const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -46,7 +46,7 @@ export const CreateEventDialog = ({
     enabled: !!user?.id,
   });
 
-  const { data: todayEvents = [] } = useQuery({
+  const { data: todayEvents = [], refetch: refetchTodayEvents } = useQuery({
     queryKey: ["todayEvents", user?.id, startDate],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -68,17 +68,20 @@ export const CreateEventDialog = ({
 
   const remainingEvents = profile?.is_admin ? "∞" : Math.max(0, 2 - (todayEvents?.length || 0));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const start = new Date(`${startDate}T${startTime}`);
     const end = new Date(`${endDate}T${endTime}`);
     
-    onCreate({
+    await onCreate({
       title,
       description,
       startDate: start,
       endDate: end,
     });
+    
+    // Refetch the data immediately after creation
+    await Promise.all([refetchProfile(), refetchTodayEvents()]);
     
     // Reset form
     setTitle("");

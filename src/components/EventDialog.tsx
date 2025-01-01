@@ -1,6 +1,6 @@
 import { format, eachDayOfInterval } from "date-fns";
 import { Crown, Plus } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader } from "./ui/dialog";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
@@ -80,11 +80,11 @@ export const EventDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[80vh]">
-        <DialogHeader>
-          <div className="flex justify-between items-center">
-            <div className="text-lg font-semibold">
-              Events for {format(date, "MMMM d, yyyy")}
-            </div>
+        <div className="flex justify-between items-center">
+          <div className="text-lg font-semibold">
+            Events for {format(date, "MMMM d, yyyy")}
+          </div>
+          {user && (
             <Button 
               onClick={() => onCreateClick(date)} 
               size="icon"
@@ -92,8 +92,8 @@ export const EventDialog = ({
             >
               <Plus className="h-4 w-4" />
             </Button>
-          </div>
-        </DialogHeader>
+          )}
+        </div>
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-4">
             {eventsForDate.length === 0 ? (
