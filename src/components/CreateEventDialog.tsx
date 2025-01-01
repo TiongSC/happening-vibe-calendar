@@ -66,7 +66,7 @@ export const CreateEventDialog = ({
     enabled: !!user?.id,
   });
 
-  const remainingEvents = profile?.is_admin ? "∞" : Math.max(0, 2 - (todayEvents?.length || 0));
+  const remainingEvents = profile?.is_admin ? "∞" : Math.max(0, profile?.events_remaining_today || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,10 +80,8 @@ export const CreateEventDialog = ({
       endDate: end,
     });
     
-    // Refetch the data immediately after creation
     await Promise.all([refetchProfile(), refetchTodayEvents()]);
     
-    // Reset form
     setTitle("");
     setDescription("");
     onClose();

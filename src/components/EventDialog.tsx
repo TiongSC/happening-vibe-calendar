@@ -1,6 +1,6 @@
 import { format, eachDayOfInterval } from "date-fns";
 import { Crown, Plus } from "lucide-react";
-import { Dialog, DialogContent } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
@@ -50,14 +50,17 @@ export const EventDialog = ({
     return creator?.is_vip || false;
   };
 
+  const canDeleteEvent = (event: Event) => {
+    const userProfile = profiles?.find(profile => profile.id === user?.id);
+    return userProfile?.is_admin || user?.id === event.created_by;
+  };
+
   const getUserName = (userId: string) => {
     const userProfile = profiles?.find(profile => profile.id === userId);
     if (userProfile?.username) {
       return userProfile.username;
     }
-    // Find email from events creator
-    const userEvent = events.find(event => event.created_by === userId);
-    return userEvent?.created_by || "Unknown User";
+    return "Unknown User";
   };
 
   const eventsForDate = events.filter(event => {
@@ -80,15 +83,15 @@ export const EventDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[80vh]">
-        <div className="flex justify-between items-center">
-          <div className="text-lg font-semibold">
-            Events for {format(date, "MMMM d, yyyy")}
-          </div>
+        <DialogHeader>
+          <DialogTitle>Events for {format(date, "MMMM d, yyyy")}</DialogTitle>
+        </DialogHeader>
+        <div className="flex justify-end">
           {user && (
             <Button 
               onClick={() => onCreateClick(date)} 
               size="icon"
-              className="rounded-full mr-8"
+              className="rounded-full"
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -104,7 +107,7 @@ export const EventDialog = ({
                   key={event.id}
                   event={event}
                   isVipEvent={isVipEvent(event)}
-                  canDelete={user?.id === event.created_by}
+                  canDelete={canDeleteEvent(event)}
                   onDelete={() => onDeleteEvent(event.id)}
                   getUserName={getUserName}
                 />
