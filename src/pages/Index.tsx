@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { UserCog, Info, User, HelpCircle, Mail } from "lucide-react";
 
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -113,7 +114,7 @@ const Index = () => {
       : [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
@@ -130,7 +131,12 @@ const Index = () => {
                   <span className="text-sm text-gray-600 mr-4">
                     Welcome, {profile?.username || user.email}
                   </span>
-                  <Button variant="outline" onClick={() => navigate("/account-settings")}>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/account-settings")}
+                    className="flex items-center gap-2"
+                  >
+                    <UserCog className="h-4 w-4" />
                     Account Settings
                   </Button>
                   <Button variant="outline" onClick={handleSignOut}>
@@ -150,7 +156,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-8">
         {user && (
           <div className="mb-6 flex justify-end">
             <Button onClick={() => setShowCreateDialog(true)}>
@@ -177,6 +183,29 @@ const Index = () => {
           selectedDate={new Date()}
         />
       </main>
+
+      <footer className="bg-white border-t mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex justify-center space-x-8">
+            <Button variant="ghost" className="flex flex-col items-center gap-1">
+              <Info className="h-5 w-5" />
+              About Us
+            </Button>
+            <Button variant="ghost" className="flex flex-col items-center gap-1" onClick={() => navigate("/account-settings")}>
+              <User className="h-5 w-5" />
+              My Account
+            </Button>
+            <Button variant="ghost" className="flex flex-col items-center gap-1">
+              <HelpCircle className="h-5 w-5" />
+              FAQ
+            </Button>
+            <Button variant="ghost" className="flex flex-col items-center gap-1">
+              <Mail className="h-5 w-5" />
+              Contact Us
+            </Button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

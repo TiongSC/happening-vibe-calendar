@@ -107,10 +107,19 @@ export const Login = () => {
         theme="light"
         providers={[]}
         view={isSignUp ? "sign_up" : "sign_in"}
-        onViewChange={(view) => {
-          setIsSignUp(view === "sign_up");
+        viewOptions={{
+          signUp: {
+            showLinks: false,
+          },
         }}
       />
+      <Button
+        variant="link"
+        className="mt-4 w-full"
+        onClick={() => setIsSignUp(!isSignUp)}
+      >
+        {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+      </Button>
     </div>
   );
 };
