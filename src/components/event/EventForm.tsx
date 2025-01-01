@@ -43,7 +43,7 @@ export const EventForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (remainingEvents !== "∞" && remainingEvents <= 0) {
+    if (remainingEvents !== "∞" && Number(remainingEvents) <= 0) {
       toast({
         title: "Event Creation Limit Reached",
         description: "You have reached your daily event creation limit.",
@@ -146,7 +146,7 @@ export const EventForm = ({
         </Button>
         <Button 
           type="submit" 
-          disabled={remainingEvents !== "∞" && remainingEvents <= 0}
+          disabled={remainingEvents !== "∞" && Number(remainingEvents) <= 0}
         >
           Create
         </Button>

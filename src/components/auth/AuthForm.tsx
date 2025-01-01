@@ -1,144 +1,106 @@
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { AuthError } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { AuthError, AuthResponse, Session } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface AuthFormProps {
-  view: "sign_in" | "sign_up";
+  mode: "sign-in" | "sign-up";
 }
 
-export const AuthForm = ({ view }: AuthFormProps) => {
-  const { toast } = useToast();
+export const AuthForm = ({ mode }: AuthFormProps) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session); // Debug log
-      
-      switch (event) {
-        case "SIGNED_IN":
-          if (session?.user) {
-            toast({
-              title: "Welcome!",
-              description: "You have successfully signed in.",
-              duration: 3000,
-            });
-            navigate("/", { replace: true });
-          }
-          break;
-
-        case "SIGNED_OUT":
-          toast({
-            title: "Signed Out",
-            description: "You have been successfully signed out.",
-            duration: 3000,
-          });
-          break;
-
-        case "PASSWORD_RECOVERY":
-          toast({
-            title: "Password Recovery",
-            description: "Check your email for password reset instructions.",
-            duration: 5000,
-          });
-          break;
-
-        case "USER_UPDATED":
-          toast({
-            title: "Profile Updated",
-            description: "Your profile has been updated successfully.",
-            duration: 3000,
-          });
-          break;
-
-        default:
-          break;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        navigate("/");
+      }
+      if (event === "SIGNED_OUT") {
+        navigate("/sign-in");
       }
     });
 
-    // Handle auth errors through the auth state change event
-    const handleAuthError = (error: AuthError) => {
-      console.error("Auth error:", error); // Debug log
-      
-      let errorMessage = "An error occurred during authentication.";
-      
-      if (error.message.includes("Invalid login credentials")) {
-        errorMessage = "Invalid email or password. Please try again.";
-      } else if (error.message.includes("Email not confirmed")) {
-        errorMessage = "Please verify your email address before signing in.";
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      let response: AuthResponse;
+
+      if (mode === "sign-in") {
+        response = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+      } else {
+        response = await supabase.auth.signUp({
+          email,
+          password,
+        });
       }
 
+      if (response.error) {
+        toast({
+          title: "Error",
+          description: response.error.message,
+          variant: "destructive",
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: mode === "sign-in" ? "Signed in successfully" : "Account created successfully",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      const authError = error as AuthError;
       toast({
-        title: "Authentication Error",
-        description: errorMessage,
-        duration: 5000,
+        title: "Error",
+        description: authError.message,
         variant: "destructive",
+        duration: 3000,
       });
-    };
-
-    // Subscribe to auth state changes
-    const authStateSubscription = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "USER_ERROR") {
-        const error = session?.error;
-        if (error) {
-          handleAuthError(error);
-        }
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-      authStateSubscription.data.subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <Auth
-      supabaseClient={supabase}
-      appearance={{ 
-        theme: ThemeSupa,
-        style: {
-          button: { background: 'rgb(59 130 246)', color: 'white' },
-          anchor: { color: 'rgb(59 130 246)' },
-          message: {
-            color: 'rgb(239 68 68)',
-            backgroundColor: 'rgb(254 242 242)',
-            borderColor: 'rgb(252 165 165)',
-            padding: '1rem',
-            marginBottom: '1rem',
-            borderRadius: '0.375rem',
-          }
-        }
-      }}
-      theme="light"
-      providers={[]}
-      view={view}
-      localization={{
-        variables: {
-          sign_up: {
-            email_label: "Email",
-            password_label: "Password",
-            email_input_placeholder: "Your email",
-            password_input_placeholder: "Your password",
-            button_label: "Sign up",
-            loading_button_label: "Signing up ...",
-            social_provider_text: "Sign in with {{provider}}",
-            confirmation_text: "Check your email for the confirmation link"
-          },
-          sign_in: {
-            email_label: "Email",
-            password_label: "Password",
-            email_input_placeholder: "Your email",
-            password_input_placeholder: "Your password",
-            button_label: "Sign in",
-            loading_button_label: "Signing in ...",
-            social_provider_text: "Sign in with {{provider}}"
-          }
-        }
-      }}
-    />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div>
+        <Input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Loading..." : mode === "sign-in" ? "Sign In" : "Sign Up"}
+      </Button>
+    </form>
   );
 };
