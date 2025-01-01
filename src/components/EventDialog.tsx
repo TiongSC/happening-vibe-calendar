@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 
 interface Event {
   id: string;
@@ -19,6 +19,13 @@ interface EventDialogProps {
 }
 
 export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps) => {
+  // Filter events for the selected date
+  const eventsForDate = events.filter(event => {
+    const startDate = new Date(event.start_date);
+    const endDate = new Date(event.end_date);
+    return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -26,7 +33,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
           <DialogTitle>Events for {format(date, "MMMM d, yyyy")}</DialogTitle>
         </DialogHeader>
         <div className="mt-4 space-y-4">
-          {events.map((event) => (
+          {eventsForDate.map((event) => (
             <div
               key={event.id}
               className="p-4 rounded-lg bg-gray-50"
@@ -42,7 +49,7 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
               </div>
             </div>
           ))}
-          {events.length === 0 && (
+          {eventsForDate.length === 0 && (
             <p className="text-center text-gray-500">No events for this date</p>
           )}
         </div>
