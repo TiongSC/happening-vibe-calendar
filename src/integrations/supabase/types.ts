@@ -43,6 +43,7 @@ export type Database = {
         Row: {
           birthday: string | null
           created_at: string
+          events_remaining_today: number
           id: string
           is_admin: boolean | null
           is_vip: boolean | null
@@ -52,6 +53,7 @@ export type Database = {
         Insert: {
           birthday?: string | null
           created_at?: string
+          events_remaining_today?: number
           id: string
           is_admin?: boolean | null
           is_vip?: boolean | null
@@ -61,6 +63,7 @@ export type Database = {
         Update: {
           birthday?: string | null
           created_at?: string
+          events_remaining_today?: number
           id?: string
           is_admin?: boolean | null
           is_vip?: boolean | null
@@ -74,12 +77,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_events_remaining: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
       get_user_daily_event_count: {
         Args: {
           user_id: string
           check_date: string
         }
         Returns: number
+      }
+      reset_events_remaining: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
