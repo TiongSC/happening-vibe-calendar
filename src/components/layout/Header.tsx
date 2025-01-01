@@ -10,7 +10,7 @@ export const Header = ({ profile }: { profile: any }) => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/sign-in");
   };
 
   return (
@@ -43,10 +43,10 @@ export const Header = ({ profile }: { profile: any }) => {
               </>
             ) : (
               <>
-                <Button variant="outline" onClick={() => navigate("/login")}>
+                <Button variant="ghost" onClick={() => navigate("/sign-in")}>
                   Sign In
                 </Button>
-                <Button onClick={() => navigate("/login?view=sign_up")}>
+                <Button onClick={() => navigate("/sign-up")}>
                   Sign Up
                 </Button>
               </>
