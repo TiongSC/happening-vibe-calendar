@@ -1,4 +1,4 @@
-/* Fixed Calendar.tsx */
+/* Updated Contents of Calendar.tsx */
 
 import React, { useState } from 'react';
 import CalendarEvent from './calendar/CalendarEvent';
@@ -9,44 +9,38 @@ function Calendar({ events }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const handleEventClick = (event) => {
-    try {
-      setSelectedEvent(event);
-    } catch (error) {
-      console.error("Error selecting event:", error);
-    }
+    setSelectedEvent(event);
   };
 
   const handleDateClick = (date) => {
-    try {
-      setSelectedDate(new Date(date));
-    } catch (error) {
-      console.error("Error selecting date:", error);
-    }
+    setSelectedDate(date);
   };
 
   const filterEventsForDate = (date) => {
-    try {
-      const normalizedDate = new Date(date);
-      normalizedDate.setHours(0, 0, 0, 0);
+    if (!date) return [];
 
-      return events.filter((event) => {
-        const eventStart = new Date(event.startDate);
-        const eventEnd = new Date(event.endDate);
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
 
-        eventStart.setHours(0, 0, 0, 0);
-        eventEnd.setHours(0, 0, 0, 0);
+    return events.filter((event) => {
+      const eventStart = new Date(event.startDate);
+      const eventEnd = new Date(event.endDate);
 
-        return normalizedDate >= eventStart && normalizedDate <= eventEnd;
-      });
-    } catch (error) {
-      console.error("Error filtering events:", error);
-      return [];
-    }
+      eventStart.setHours(0, 0, 0, 0);
+      eventEnd.setHours(0, 0, 0, 0);
+
+      // Include events that start or end on the selected day
+      return (
+        normalizedDate.getTime() === eventStart.getTime() || // Starts on the selected day
+        normalizedDate.getTime() === eventEnd.getTime() ||   // Ends on the selected day
+        (normalizedDate > eventStart && normalizedDate < eventEnd) // Falls within the range
+      );
+    });
   };
 
   return (
     <div className="calendar">
-      {events.map((event, index) => (
+      {events && events.map((event, index) => (
         <CalendarEvent
           key={index}
           event={event}
@@ -56,7 +50,7 @@ function Calendar({ events }) {
 
       {selectedDate && (
         <div className="events-for-date">
-          <h2>Events for {selectedDate.toLocaleDateString()}</h2>
+          <h2>Events for {new Date(selectedDate).toLocaleDateString()}</h2>
           {filterEventsForDate(selectedDate).map((event, index) => (
             <CalendarEvent
               key={index}
@@ -77,8 +71,6 @@ function Calendar({ events }) {
 }
 
 export default Calendar;
-
-
 
 
 
