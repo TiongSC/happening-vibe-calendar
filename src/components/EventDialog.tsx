@@ -39,6 +39,16 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     },
   });
 
+  const getUserName = (userId: string) => {
+    const profile = profiles?.find(p => p.id === userId);
+    return profile?.username || userId;
+  };
+
+  const isVipEvent = (event: Event) => {
+    const creator = profiles?.find(profile => profile.id === event.created_by);
+    return creator?.is_vip || false;
+  };
+
   // Delete event mutation
   const deleteEventMutation = useMutation({
     mutationFn: async (eventId: string) => {
@@ -71,16 +81,6 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
       if (!aIsVip && bIsVip) return 1;
       return 0;
     });
-
-  const getUserName = (userId: string) => {
-    const profile = profiles?.find(p => p.id === userId);
-    return profile?.username || userId;
-  };
-
-  const isVipEvent = (event: Event) => {
-    const creator = profiles?.find(profile => profile.id === event.created_by);
-    return creator?.is_vip || false;
-  };
 
   const handleDeleteEvent = (eventId: string, createdBy: string) => {
     if (user?.id !== createdBy) {
