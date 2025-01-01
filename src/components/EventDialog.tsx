@@ -1,14 +1,16 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { format } from "date-fns";
 import { ScrollArea } from "./ui/scroll-area";
-import { Trash2, Crown, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "./ui/button";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { CreateEventDialog } from "./CreateEventDialog";
+import { EventItem } from "./EventItem";
+import { isEventInDay } from "@/utils/dateUtils";
 
 interface Event {
   id: string;
@@ -30,7 +32,6 @@ interface EventDialogProps {
 export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const { data: profiles } = useQuery({
@@ -70,7 +71,6 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
         description: "Event deleted successfully.",
         duration: 3000,
       });
-      queryClient.invalidateQueries({ queryKey: ['events'] });
     }
   };
 
@@ -111,7 +111,6 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
         description: "Event created successfully.",
         duration: 3000,
       });
-      queryClient.invalidateQueries({ queryKey: ['events'] });
       setShowCreateDialog(false);
     }
   };
@@ -125,6 +124,8 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
     const creator = profiles?.find(profile => profile.id === event.created_by);
     return creator?.is_vip || false;
   };
+
+  const filteredEvents = events.filter(event => isEventInDay(event, date));
 
   return (
     <>
@@ -149,38 +150,20 @@ export const EventDialog = ({ isOpen, onClose, date, events }: EventDialogProps)
           </DialogHeader>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4">
-              {events.map((event) => (
-                <div
+              {filteredEvents.map((event) => (
+                <EventItem
                   key={event.id}
-                  className={`p-4 rounded-lg ${
-                    isVipEvent(event) ? "bg-secondary/20" : "bg-gray-50"
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      {isVipEvent(event) && (
-                        <Crown className="h-4 w-4 fill-secondary-foreground/30" />
-                      )}
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                    </div>
-                    {(user?.id === event.created_by || profiles?.find(p => p.id === user?.id)?.is_admin) && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteEvent(event.id, event.created_by)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{event.description}</p>
-                  <div className="text-xs text-gray-500">
-                    <p>Duration: {format(new Date(event.start_date), "MMM d, yyyy h:mm a")} - {format(new Date(event.end_date), "MMM d, yyyy h:mm a")}</p>
-                    <p className="mt-1">Created by: {getUserName(event.created_by)}</p>
-                  </div>
-                </div>
+                  event={event}
+                  isVipEvent={isVipEvent(event)}
+                  canDelete={
+                    user?.id === event.created_by ||
+                    !!profiles?.find((p) => p.id === user?.id)?.is_admin
+                  }
+                  onDelete={() => handleDeleteEvent(event.id, event.created_by)}
+                  getUserName={getUserName}
+                />
               ))}
-              {events.length === 0 && (
+              {filteredEvents.length === 0 && (
                 <p className="text-center text-gray-500">No events for this date</p>
               )}
             </div>
