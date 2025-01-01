@@ -53,12 +53,14 @@ const Index = () => {
   const createEventMutation = useMutation({
     mutationFn: async (eventData: {
       title: string;
+      description: string;
       startDate: Date;
       endDate: Date;
     }) => {
       const { data, error } = await supabase.from("events").insert([
         {
           title: eventData.title,
+          description: eventData.description,
           start_date: eventData.startDate.toISOString(),
           end_date: eventData.endDate.toISOString(),
           created_by: user?.id,
@@ -75,6 +77,26 @@ const Index = () => {
         description: "Your event has been successfully created.",
         duration: 3000,
       });
+    },
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      toast({
+        title: "Event deleted",
+        description: "Your event has been successfully deleted.",
+        duration: 3000,
+      });
+      setShowEventDialog(false);
     },
   });
 
@@ -99,6 +121,8 @@ const Index = () => {
             onClose={() => setShowEventDialog(false)}
             date={selectedDate}
             events={events}
+            onCreateClick={() => setShowCreateDialog(true)}
+            onDeleteEvent={(eventId) => deleteEventMutation.mutate(eventId)}
           />
         )}
 
