@@ -12,7 +12,7 @@ export const SignUp = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_UP') {
+      if (event === 'SIGNED_UP' || event === 'USER_CREATED') {
         setShowVerificationMessage(true);
       } else if (event === 'SIGNED_IN') {
         navigate('/');
