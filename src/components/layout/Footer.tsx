@@ -18,7 +18,7 @@ export const Footer = () => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={() => navigate("/about-us")}>
                   <Info className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
@@ -40,7 +40,7 @@ export const Footer = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={() => navigate("/faq")}>
                   <HelpCircle className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
@@ -51,7 +51,11 @@ export const Footer = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => window.open("https://www.facebook.com", "_blank")}
+                >
                   <Mail className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>

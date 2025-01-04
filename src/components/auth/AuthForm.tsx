@@ -1,31 +1,69 @@
-import { Auth } from "@supabase/auth-ui-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { AuthHeader } from "./AuthHeader";
+import { useToast } from "@/hooks/use-toast";
 
-export interface AuthFormProps {
-  view: "sign_in" | "sign_up";
-}
+export const AuthForm = ({ mode }: { mode: "sign-in" | "sign-up" }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { toast } = useToast();
 
-export const AuthForm = ({ view }: AuthFormProps) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (mode === "sign-up") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <Auth
-      supabaseClient={supabase}
-      view={view}
-      appearance={{
-        theme: ThemeSupa,
-        style: {
-          button: {
-            background: "rgb(59 130 246)",
-            color: "white",
-            ':hover': {
-              background: "rgb(29 78 216)",
-            },
-          },
-        },
-      }}
-      theme="light"
-      showLinks={false}
-      providers={[]}
-    />
+    <div className="space-y-6">
+      <AuthHeader mode={mode} />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <Button
+          type="submit"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+        >
+          {mode === "sign-in" ? "Sign In" : "Sign Up"}
+        </Button>
+      </form>
+    </div>
   );
 };
