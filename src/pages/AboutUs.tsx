@@ -29,25 +29,47 @@ const AboutUs = () => {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold text-primary mb-6">About Us</h1>
           
-          <div className="prose prose-lg">
-            <p className="mb-4">
-              Welcome to our event planning platform! We're dedicated to making event organization 
-              simple and efficient for everyone.
-            </p>
-            
-            <h2 className="text-2xl font-semibold mt-8 mb-4">Our Mission</h2>
-            <p className="mb-4">
-              Our mission is to provide a seamless event management experience that brings people 
-              together and makes organizing events a breeze.
-            </p>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-8 space-y-6">
+              <section className="space-y-4">
+                <h2 className="text-2xl font-semibold text-gray-800">Welcome to Happening Vibe</h2>
+                <p className="text-gray-600 leading-relaxed">
+                  We're dedicated to making event organization simple and efficient for everyone. 
+                  Our platform brings together event planners and participants in a seamless, 
+                  user-friendly environment.
+                </p>
+              </section>
 
-            <h2 className="text-2xl font-semibold mt-8 mb-4">What We Offer</h2>
-            <ul className="list-disc pl-6 mb-4">
-              <li>Easy event creation and management</li>
-              <li>Collaborative planning tools</li>
-              <li>VIP features for premium users</li>
-              <li>Intuitive calendar interface</li>
-            </ul>
+              <section className="space-y-4">
+                <h2 className="text-2xl font-semibold text-gray-800">Our Mission</h2>
+                <p className="text-gray-600 leading-relaxed">
+                  Our mission is to revolutionize the way people plan and manage events. We believe 
+                  that bringing people together should be easy, enjoyable, and stress-free.
+                </p>
+              </section>
+
+              <section className="space-y-4">
+                <h2 className="text-2xl font-semibold text-gray-800">What We Offer</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">Event Creation</h3>
+                    <p className="text-gray-600">Create and manage events with our intuitive interface</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">VIP Features</h3>
+                    <p className="text-gray-600">Access premium features with our VIP membership</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">Calendar Integration</h3>
+                    <p className="text-gray-600">Seamlessly manage your event schedule</p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-gray-700 mb-2">User Community</h3>
+                    <p className="text-gray-600">Connect with other event organizers</p>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </main>

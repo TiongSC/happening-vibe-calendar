@@ -38,11 +38,16 @@ const AccountSettings = () => {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (updates: { username: string; phone_number: string }) => {
+    mutationFn: async (updates: { username?: string; phone_number: string }) => {
       if (!user?.id) throw new Error("No user");
       
-      // First check if username is already taken (if username was changed)
-      if (updates.username !== profile?.username) {
+      // Only include username in updates if it's not already set and a new one is provided
+      const finalUpdates: { username?: string; phone_number: string } = {
+        phone_number: updates.phone_number
+      };
+
+      if (!profile?.username && updates.username) {
+        // Check if username is already taken
         const { data: existingUser } = await supabase
           .from("profiles")
           .select("id")
@@ -50,13 +55,14 @@ const AccountSettings = () => {
           .single();
 
         if (existingUser) {
-          throw new Error("Username is already taken");
+          throw new Error("This username is already taken. Please choose another one.");
         }
+        finalUpdates.username = updates.username;
       }
 
       const { error } = await supabase
         .from("profiles")
-        .update(updates)
+        .update(finalUpdates)
         .eq("id", user.id);
       
       if (error) throw error;
@@ -79,7 +85,10 @@ const AccountSettings = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfileMutation.mutate({ username, phone_number: phoneNumber });
+    updateProfileMutation.mutate({ 
+      username: !profile?.username ? username : undefined,
+      phone_number: phoneNumber 
+    });
   };
 
   return (
@@ -107,14 +116,16 @@ const AccountSettings = () => {
 
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
+                  Username {profile?.username && "(Cannot be changed once set)"}
                 </label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  disabled={!!profile?.username}
+                  className={profile?.username ? "bg-gray-50" : ""}
+                  placeholder={profile?.username ? "" : "Enter your username"}
                 />
               </div>
 
