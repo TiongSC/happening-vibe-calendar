@@ -28,6 +28,12 @@ export const SignUp = () => {
       const { error, data }: AuthResponse = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/set-username`,
+          data: {
+            email: email,
+          }
+        }
       });
 
       if (error) {
