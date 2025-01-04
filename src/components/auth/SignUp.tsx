@@ -7,10 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AuthError, AuthResponse } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export const SignUp = () => {
   const navigate = useNavigate();
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -25,6 +27,15 @@ export const SignUp = () => {
 
   const handleSignUp = async (email: string, password: string, username?: string) => {
     try {
+      if (!captchaToken) {
+        toast({
+          title: "Verification Required",
+          description: "Please complete the CAPTCHA verification.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // First check if username exists
       if (username) {
         const { data: existingUsers, error: checkError } = await supabase
@@ -58,6 +69,7 @@ export const SignUp = () => {
           data: {
             username: username,
           },
+          captchaToken: captchaToken,
         },
       });
 
@@ -106,6 +118,13 @@ export const SignUp = () => {
       ) : (
         <>
           <AuthForm mode="sign-up" onSubmit={handleSignUp} />
+          <div className="mt-4 flex justify-center">
+            <HCaptcha
+              sitekey={import.meta.env.VITE_HCAPTCHA_SITE_KEY || '10000000-ffff-ffff-ffff-000000000001'}
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken(null)}
+            />
+          </div>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
