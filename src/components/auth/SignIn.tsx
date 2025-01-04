@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { AuthError } from "@supabase/supabase-js";
 
 export const SignIn = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export const SignIn = () => {
       toast({
         title: "Email Verification Required",
         description: "Please check your email and click the verification link before signing in.",
-        duration: 5000,
+        duration: 6000,
         variant: "destructive",
       });
     }
@@ -41,10 +42,45 @@ export const SignIn = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
+  const handleSignIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          toast({
+            title: "Email Not Verified",
+            description: "Please check your email and verify your account before signing in. If you need a new verification email, please sign up again.",
+            duration: 6000,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sign In Error",
+            description: error.message,
+            duration: 5000,
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      const authError = error as AuthError;
+      toast({
+        title: "Error",
+        description: authError.message,
+        duration: 5000,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <AuthHeader mode="sign-in" />
-      <AuthForm mode="sign-in" />
+      <AuthForm mode="sign-in" onSubmit={handleSignIn} />
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600">
           Don't have an account yet?{" "}
