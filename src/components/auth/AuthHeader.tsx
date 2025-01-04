@@ -10,7 +10,7 @@ export const AuthHeader = ({ mode }: AuthHeaderProps) => {
   
   return (
     <div className="flex justify-between items-center mb-6">
-      <h1 className="text-2xl font-bold">Welcome to Happening Vibe</h1>
+      <h1 className="text-2xl font-bold whitespace-nowrap">Welcome to Happening Vibe</h1>
       <Button variant="outline" onClick={() => navigate("/")}>
         Back to Home
       </Button>

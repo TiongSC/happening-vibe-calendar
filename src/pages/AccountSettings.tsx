@@ -27,12 +27,10 @@ const AccountSettings = () => {
       return data;
     },
     enabled: !!user?.id,
-    meta: {
-      onSuccess: (data: any) => {
-        if (data) {
-          setUsername(data.username || "");
-          setPhoneNumber(data.phone_number || "");
-        }
+    onSuccess: (data) => {
+      if (data) {
+        setUsername(data.username || "");
+        setPhoneNumber(data.phone_number || "");
       }
     }
   });
@@ -41,7 +39,6 @@ const AccountSettings = () => {
     mutationFn: async (updates: { username?: string; phone_number: string }) => {
       if (!user?.id) throw new Error("No user");
       
-      // Only include username in updates if it's not already set and a new one is provided
       const finalUpdates: { username?: string; phone_number: string } = {
         phone_number: updates.phone_number
       };
@@ -125,8 +122,13 @@ const AccountSettings = () => {
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={!!profile?.username}
                   className={profile?.username ? "bg-gray-50" : ""}
-                  placeholder={profile?.username ? "" : "Enter your username"}
+                  placeholder={profile?.username ? "" : "Set your username (this cannot be changed later)"}
                 />
+                {!profile?.username && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    Choose your username carefully as it cannot be changed once set.
+                  </p>
+                )}
               </div>
 
               <div>

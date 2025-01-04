@@ -16,7 +16,7 @@ export const SignUp = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        navigate('/set-username');
+        navigate('/account-settings');
       }
     });
 
@@ -28,12 +28,6 @@ export const SignUp = () => {
       const { error, data }: AuthResponse = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/set-username`,
-          data: {
-            email: email,
-          }
-        }
       });
 
       if (error) {
