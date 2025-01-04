@@ -21,11 +21,14 @@ const formSchema = z.object({
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
   }),
+  username: z.string().min(3, {
+    message: "Username must be at least 3 characters.",
+  }).optional(),
 });
 
 type AuthFormProps = {
   mode: "sign-in" | "sign-up";
-  onSubmit?: (email: string, password: string) => Promise<void>;
+  onSubmit?: (email: string, password: string, username?: string) => Promise<void>;
 };
 
 export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
@@ -35,13 +38,14 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
     defaultValues: {
       email: "",
       password: "",
+      username: "",
     },
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       if (onSubmit) {
-        await onSubmit(values.email, values.password);
+        await onSubmit(values.email, values.password, values.username);
       } else if (mode === "sign-in") {
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
@@ -78,6 +82,21 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {mode === "sign-up" && (
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="Choose a username" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="email"

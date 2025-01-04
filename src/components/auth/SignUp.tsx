@@ -23,11 +23,43 @@ export const SignUp = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleSignUp = async (email: string, password: string) => {
+  const handleSignUp = async (email: string, password: string, username?: string) => {
     try {
+      // First check if username exists
+      if (username) {
+        const { data: existingUser, error: checkError } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('username', username)
+          .single();
+
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+          toast({
+            title: "Error",
+            description: "Error checking username availability",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (existingUser) {
+          toast({
+            title: "Username Taken",
+            description: "This username is already taken. Please choose another one.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       const { error, data }: AuthResponse = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username: username,
+          },
+        },
       });
 
       if (error) {
