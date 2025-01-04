@@ -5,22 +5,57 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AuthError, AuthResponse } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 
 export const SignUp = () => {
   const navigate = useNavigate();
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_UP' || event === 'USER_CREATED') {
+      if (event === "SIGNED_UP" || event === "USER_CREATED") {
         setShowVerificationMessage(true);
-      } else if (event === 'SIGNED_IN') {
+      } else if (event === "SIGNED_IN") {
         navigate('/');
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleSignUp = async (email: string, password: string) => {
+    try {
+      const { error }: AuthResponse = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('over_email_send_rate_limit')) {
+          toast({
+            title: "Rate Limit Exceeded",
+            description: "Please wait 24 seconds before trying again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      const authError = error as AuthError;
+      toast({
+        title: "Error",
+        description: authError.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
@@ -33,7 +68,7 @@ export const SignUp = () => {
         </Alert>
       ) : (
         <>
-          <AuthForm mode="sign-up" />
+          <AuthForm mode="sign-up" onSubmit={handleSignUp} />
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
