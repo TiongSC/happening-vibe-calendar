@@ -1,7 +1,11 @@
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router-dom";
 
-export const AuthHeader = () => {
+interface AuthHeaderProps {
+  mode: "sign-in" | "sign-up";
+}
+
+export const AuthHeader = ({ mode }: AuthHeaderProps) => {
   const navigate = useNavigate();
   
   return (

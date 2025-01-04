@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { AuthHeader } from "./AuthHeader";
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthFormProps {
@@ -22,26 +21,51 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast({
+              title: "Account already exists",
+              description: "This email is already registered. Please sign in instead.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Sign up failed",
+              description: "Please check your information and try again.",
+              variant: "destructive",
+            });
+          }
+          throw error;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast({
+              title: "Sign in failed",
+              description: "Email or password is incorrect. Please try again.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Sign in failed",
+              description: "Please check your information and try again.",
+              variant: "destructive",
+            });
+          }
+          throw error;
+        }
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error("Auth error:", error.message);
     }
   };
 
   return (
     <div className="space-y-6">
-      <AuthHeader mode={mode} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Input
