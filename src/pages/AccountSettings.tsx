@@ -1,174 +1,152 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/components/AuthProvider";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const AccountSettings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/sign-in");
-      return;
-    }
-
-    const fetchProfile = async () => {
-      const { data: profile } = await supabase
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
         .single();
-
-      if (profile) {
-        setUsername(profile.username || "");
-        setPhoneNumber(profile.phone_number || "");
-        setBirthday(profile.birthday ? profile.birthday.split("T")[0] : "");
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data) {
+        setUsername(data.username || "");
+        setPhoneNumber(data.phone_number || "");
       }
-      setLoading(false);
-    };
+    },
+  });
 
-    fetchProfile();
-  }, [user, navigate]);
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    try {
-      const { error: usernameCheckError, count } = await supabase
-        .from("profiles")
-        .select("*", { count: 'exact' })
-        .eq("username", username)
-        .neq("id", user.id);
-
-      if (count && count > 0) {
-        toast({
-          title: "Username already taken",
-          description: "Please choose a different username",
-          variant: "destructive",
-        });
-        return;
-      }
-
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: { username: string; phone_number: string }) => {
+      if (!user?.id) throw new Error("No user");
       const { error } = await supabase
         .from("profiles")
-        .update({
-          username,
-          phone_number: phoneNumber,
-          birthday: birthday || null,
-        })
+        .update(updates)
         .eq("id", user.id);
-
       if (error) throw error;
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast({
         title: "Profile updated",
         description: "Your profile has been successfully updated.",
-        duration: 3000,
       });
-    } catch (error) {
+    },
+    onError: (error) => {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
-    }
+      console.error("Error updating profile:", error);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProfileMutation.mutate({ username, phone_number: phoneNumber });
   };
 
-  const handlePasswordReset = async () => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user?.email || "", {
-        redirectTo: `${window.location.origin}/account-settings`,
-      });
-      
-      if (error) throw error;
-
-      toast({
-        title: "Password reset email sent",
-        description: "Please check your email to reset your password.",
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send password reset email. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <Button
-              variant="link"
-              className="text-3xl font-bold text-primary p-0"
-              onClick={() => navigate("/")}
-            >
-              Happening Vibe
-            </Button>
-            <Button variant="outline" onClick={() => navigate("/")}>
-              Back to Home
-            </Button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-primary mb-6">Account Settings</h1>
+          
+          <div className="bg-white p-6 rounded-lg shadow">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email || ""}
+                  disabled
+                  className="bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Username
+                </label>
+                <Input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button 
+                  type="submit" 
+                  disabled={updateProfileMutation.isPending}
+                >
+                  {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-8 pt-6 border-t">
+              <h2 className="text-lg font-semibold mb-4">Account Status</h2>
+              <div className="space-y-2">
+                <p>
+                  Account Type: {profile?.is_vip ? "VIP User" : "Regular User"}
+                </p>
+                <p>
+                  Events Remaining Today: {profile?.events_remaining_today}
+                </p>
+                {profile?.is_admin && (
+                  <p className="text-primary">Administrator Account</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-        <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
-        <form onSubmit={handleUpdateProfile} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-1">Username</label>
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Phone Number</label>
-            <Input
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="Enter phone number"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Birthday</label>
-            <Input
-              type="date"
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <Input value={user?.email || ""} disabled className="bg-gray-100" />
-          </div>
-          <div className="flex justify-between items-center pt-4">
-            <Button type="submit">Update Profile</Button>
-            <Button type="button" variant="outline" onClick={handlePasswordReset}>
-              Reset Password
-            </Button>
-          </div>
-        </form>
       </main>
+
+      <Footer />
     </div>
   );
 };
