@@ -47,7 +47,7 @@ export const SignIn = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
