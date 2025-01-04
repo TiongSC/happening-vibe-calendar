@@ -27,7 +27,7 @@ const AccountSettings = () => {
       return data;
     },
     enabled: !!user?.id,
-    onSuccess: (data) => {
+    onSettled: (data) => {
       if (data) {
         setUsername(data.username || "");
         setPhoneNumber(data.phone_number || "");

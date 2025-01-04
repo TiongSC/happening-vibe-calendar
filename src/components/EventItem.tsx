@@ -49,7 +49,7 @@ export const EventItem = ({
           </Button>
         )}
       </div>
-      <p className="text-sm text-gray-600 mb-2 whitespace-pre-wrap break-words max-w-full overflow-hidden">
+      <p className="text-sm text-gray-600 mb-2 whitespace-pre-wrap break-words max-w-full overflow-hidden" style={{ width: '50ch' }}>
         {event.description}
       </p>
       <div className="text-xs text-gray-500">
