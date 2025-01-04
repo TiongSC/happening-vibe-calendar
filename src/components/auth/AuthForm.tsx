@@ -40,24 +40,38 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      if (mode === "sign-in") {
+      if (onSubmit) {
+        await onSubmit(values.email, values.password);
+      } else if (mode === "sign-in") {
         const { error } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
         });
 
         if (error) {
-          toast({
-            title: "Error signing in",
-            description: error.message,
-            variant: "destructive",
-          });
+          if (error.message.includes('Email not confirmed')) {
+            toast({
+              title: "Email Not Verified",
+              description: "Please check your email and verify your account before signing in. If you need a new verification email, please sign up again.",
+              duration: 6000,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Error signing in",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
         }
-      } else if (onSubmit) {
-        await onSubmit(values.email, values.password);
       }
     } catch (error) {
       console.error("Auth error:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
