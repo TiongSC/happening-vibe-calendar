@@ -15,9 +15,7 @@ export const SignUp = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_UP" || event === "USER_CREATED") {
-        setShowVerificationMessage(true);
-      } else if (event === "SIGNED_IN") {
+      if (event === 'SIGNED_IN') {
         navigate('/');
       }
     });
@@ -27,7 +25,7 @@ export const SignUp = () => {
 
   const handleSignUp = async (email: string, password: string) => {
     try {
-      const { error }: AuthResponse = await supabase.auth.signUp({
+      const { error, data }: AuthResponse = await supabase.auth.signUp({
         email,
         password,
       });
@@ -46,6 +44,14 @@ export const SignUp = () => {
             variant: "destructive",
           });
         }
+      } else if (data.user) {
+        setShowVerificationMessage(true);
+        toast({
+          title: "Verification Email Sent",
+          description: "Please check your email and click the verification link to complete your registration.",
+          duration: 6000,
+        });
+        navigate('/verify-email');
       }
     } catch (error) {
       const authError = error as AuthError;
