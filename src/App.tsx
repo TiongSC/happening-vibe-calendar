@@ -3,6 +3,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { SignIn } from "@/components/auth/SignIn";
 import { SignUp } from "@/components/auth/SignUp";
 import { VerifyEmail } from "@/pages/VerifyEmail";
+import { SetUsername } from "@/pages/SetUsername";
 import Index from "@/pages/Index";
 import AboutUs from "@/pages/AboutUs";
 import FAQ from "@/pages/FAQ";
@@ -21,6 +22,7 @@ function App() {
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/set-username" element={<SetUsername />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/account-settings" element={<AccountSettings />} />

@@ -13,9 +13,20 @@ export const SignIn = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN') {
-        navigate('/');
+        // Check if user has a username set
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session?.user?.id)
+          .single();
+
+        if (!profile?.username) {
+          navigate('/set-username');
+        } else {
+          navigate('/');
+        }
       } else if (event === 'USER_UPDATED') {
         // Handle email verification success
         if (session?.user.email_confirmed_at) {
@@ -44,7 +55,7 @@ export const SignIn = () => {
 
   const handleSignIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
