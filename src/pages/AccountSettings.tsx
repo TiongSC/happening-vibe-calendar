@@ -24,11 +24,11 @@ const AccountSettings = () => {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       return data;
     },
     enabled: !!user?.id,
-    onSuccess: (data) => {
+    onSettled: (data) => {
       if (data) {
         setUsername(data.username || "");
         setPhoneNumber(data.phone_number || "");
@@ -43,7 +43,7 @@ const AccountSettings = () => {
       
       const finalUpdates: { username?: string; phone_number: string; birthday: string } = {
         phone_number: updates.phone_number,
-        birthday: updates.birthday
+        birthday: updates.birthday || null // Handle empty birthday string
       };
 
       if (updates.username) {
@@ -53,7 +53,7 @@ const AccountSettings = () => {
           .select("id")
           .eq("username", updates.username)
           .neq("id", user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single
 
         if (existingUser) {
           throw new Error("This username is already taken. Please choose another one.");
