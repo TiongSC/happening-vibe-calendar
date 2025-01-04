@@ -4,9 +4,9 @@ import { SignIn } from "@/components/auth/SignIn";
 import { SignUp } from "@/components/auth/SignUp";
 import { VerifyEmail } from "@/pages/VerifyEmail";
 import Index from "@/pages/Index";
-import { AboutUs } from "@/pages/AboutUs";
-import { FAQ } from "@/pages/FAQ";
-import { AccountSettings } from "@/pages/AccountSettings";
+import AboutUs from "@/pages/AboutUs";
+import FAQ from "@/pages/FAQ";
+import AccountSettings from "@/pages/AccountSettings";
 
 function App() {
   return (
