@@ -15,7 +15,7 @@ const AccountSettings = () => {
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -26,12 +26,15 @@ const AccountSettings = () => {
         .single();
       return data;
     },
-    onSuccess: (data) => {
-      if (data) {
-        setUsername(data.username || "");
-        setPhoneNumber(data.phone_number || "");
+    enabled: !!user?.id,
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          setUsername(data.username || "");
+          setPhoneNumber(data.phone_number || "");
+        }
       }
-    },
+    }
   });
 
   const updateProfileMutation = useMutation({
@@ -65,13 +68,9 @@ const AccountSettings = () => {
     updateProfileMutation.mutate({ username, phone_number: phoneNumber });
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header profile={profile} />
       
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
