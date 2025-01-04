@@ -16,18 +16,31 @@ export const SignIn = () => {
       console.log("Auth state changed:", event, session);
       
       if (event === 'SIGNED_IN') {
-        // Check if user has a username set
-        const { data: profile } = await supabase
+        console.log("User signed in successfully, checking profile...");
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('username')
           .eq('id', session?.user?.id)
           .single();
 
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          toast({
+            title: "Error",
+            description: "Failed to fetch user profile",
+            duration: 5000,
+            variant: "destructive",
+          });
+          return;
+        }
+
         console.log("Profile data:", profile);
 
         if (!profile?.username) {
+          console.log("No username found, redirecting to set-username...");
           navigate('/set-username');
         } else {
+          console.log("Username found, redirecting to home...");
           navigate('/');
         }
       }
@@ -38,8 +51,9 @@ export const SignIn = () => {
 
   const handleSignIn = async (email: string, password: string) => {
     try {
-      console.log("Attempting sign in with:", email);
-      const { error, data } = await supabase.auth.signInWithPassword({
+      console.log("Attempting sign in with email:", email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -52,9 +66,20 @@ export const SignIn = () => {
           duration: 5000,
           variant: "destructive",
         });
-      } else {
-        console.log("Sign in successful:", data);
+        return;
       }
+
+      console.log("Sign in response:", data);
+      
+      if (data.user) {
+        console.log("Sign in successful for user:", data.user.id);
+        toast({
+          title: "Success",
+          description: "Signed in successfully",
+          duration: 3000,
+        });
+      }
+
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
       const authError = error as AuthError;
