@@ -89,10 +89,10 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
             <CalendarDay
               key={day.toISOString()}
               day={day}
-              currentMonth={currentDate}
+              currentDate={currentDate}
               events={dayEvents}
               isVipEvent={isVipEvent}
-              onClick={() => onDateClick(day)}
+              onDateClick={() => onDateClick(day)}
             />
           );
         })}
