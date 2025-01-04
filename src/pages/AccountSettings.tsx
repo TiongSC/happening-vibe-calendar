@@ -14,6 +14,7 @@ const AccountSettings = () => {
   const queryClient = useQueryClient();
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthday, setBirthday] = useState("");
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -27,28 +28,31 @@ const AccountSettings = () => {
       return data;
     },
     enabled: !!user?.id,
-    onSettled: (data) => {
+    onSuccess: (data) => {
       if (data) {
         setUsername(data.username || "");
         setPhoneNumber(data.phone_number || "");
+        setBirthday(data.birthday || "");
       }
     }
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (updates: { username?: string; phone_number: string }) => {
+    mutationFn: async (updates: { username?: string; phone_number: string; birthday: string }) => {
       if (!user?.id) throw new Error("No user");
       
-      const finalUpdates: { username?: string; phone_number: string } = {
-        phone_number: updates.phone_number
+      const finalUpdates: { username?: string; phone_number: string; birthday: string } = {
+        phone_number: updates.phone_number,
+        birthday: updates.birthday
       };
 
-      if (!profile?.username && updates.username) {
+      if (updates.username) {
         // Check if username is already taken
         const { data: existingUser } = await supabase
           .from("profiles")
           .select("id")
           .eq("username", updates.username)
+          .neq("id", user.id)
           .single();
 
         if (existingUser) {
@@ -83,8 +87,9 @@ const AccountSettings = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateProfileMutation.mutate({ 
-      username: !profile?.username ? username : undefined,
-      phone_number: phoneNumber 
+      username,
+      phone_number: phoneNumber,
+      birthday
     });
   };
 
@@ -113,22 +118,27 @@ const AccountSettings = () => {
 
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username {profile?.username && "(Cannot be changed once set)"}
+                  Username
                 </label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  disabled={!!profile?.username}
-                  className={profile?.username ? "bg-gray-50" : ""}
-                  placeholder={profile?.username ? "" : "Set your username (this cannot be changed later)"}
+                  placeholder="Set your username"
                 />
-                {!profile?.username && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    Choose your username carefully as it cannot be changed once set.
-                  </p>
-                )}
+              </div>
+
+              <div>
+                <label htmlFor="birthday" className="block text-sm font-medium text-gray-700 mb-1">
+                  Birthday
+                </label>
+                <Input
+                  id="birthday"
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                />
               </div>
 
               <div>
