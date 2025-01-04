@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { AuthError } from "@supabase/supabase-js";
 
@@ -14,6 +13,8 @@ export const SignIn = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
+      
       if (event === 'SIGNED_IN') {
         // Check if user has a username set
         const { data: profile } = await supabase
@@ -22,62 +23,40 @@ export const SignIn = () => {
           .eq('id', session?.user?.id)
           .single();
 
+        console.log("Profile data:", profile);
+
         if (!profile?.username) {
           navigate('/set-username');
         } else {
           navigate('/');
         }
-      } else if (event === 'USER_UPDATED') {
-        // Handle email verification success
-        if (session?.user.email_confirmed_at) {
-          toast({
-            title: "Email Verified",
-            description: "Your email has been successfully verified. You can now sign in.",
-            duration: 5000,
-          });
-        }
       }
     });
 
-    // Check for email verification status from URL parameters
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('error_description') === 'Email not confirmed') {
-      toast({
-        title: "Email Verification Required",
-        description: "Please check your email and click the verification link before signing in.",
-        duration: 6000,
-        variant: "destructive",
-      });
-    }
-
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
+      console.log("Attempting sign in with:", email);
       const { error, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        if (error.message.includes('Email not confirmed')) {
-          toast({
-            title: "Email Not Verified",
-            description: "Please check your email and verify your account before signing in. If you need a new verification email, please sign up again.",
-            duration: 6000,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Sign In Error",
-            description: error.message,
-            duration: 5000,
-            variant: "destructive",
-          });
-        }
+        console.error("Sign in error:", error);
+        toast({
+          title: "Sign In Error",
+          description: error.message,
+          duration: 5000,
+          variant: "destructive",
+        });
+      } else {
+        console.log("Sign in successful:", data);
       }
     } catch (error) {
+      console.error("Unexpected error during sign in:", error);
       const authError = error as AuthError;
       toast({
         title: "Error",

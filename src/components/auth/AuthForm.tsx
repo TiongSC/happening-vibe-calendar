@@ -11,8 +11,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -32,7 +30,6 @@ type AuthFormProps = {
 };
 
 export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
-  const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,39 +40,8 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      if (onSubmit) {
-        await onSubmit(values.email, values.password, values.username);
-      } else if (mode === "sign-in") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-        });
-
-        if (error) {
-          if (error.message.includes('Email not confirmed')) {
-            toast({
-              title: "Email Not Verified",
-              description: "Please check your email and verify your account before signing in. If you need a new verification email, please sign up again.",
-              duration: 6000,
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Error signing in",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Auth error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+    if (onSubmit) {
+      await onSubmit(values.email, values.password, values.username);
     }
   };
 
