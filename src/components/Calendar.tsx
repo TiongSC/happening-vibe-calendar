@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { CalendarHeader } from "./calendar/CalendarHeader";
+import { CalendarDay } from "./calendar/CalendarDay";
 import {
-  format,
   addMonths,
   subMonths,
   startOfMonth,
@@ -12,8 +13,7 @@ import {
 } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarHeader } from "./calendar/CalendarHeader";
-import { CalendarDay } from "./calendar/CalendarDay";
+import { useAuth } from "./AuthProvider";
 
 interface Event {
   id: string;
@@ -46,7 +46,8 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
-  // Query to get VIP status for all users
+  const { user } = useAuth();
+
   const { data: profiles } = useQuery({
     queryKey: ['profiles'],
     queryFn: async () => {
@@ -55,49 +56,46 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
     },
   });
 
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
-      const startDate = new Date(event.start_date);
-      const endDate = new Date(event.end_date);
-      return isSameDay(date, startDate) || (date >= startDate && date <= endDate);
-    });
-  };
-
   const isVipEvent = (event: Event) => {
     const creator = profiles?.find(profile => profile.id === event.created_by);
     return creator?.is_vip || false;
   };
 
   return (
-    <div className="w-full mx-auto p-4">
+    <div className="bg-white rounded-lg shadow overflow-hidden">
       <CalendarHeader
         currentDate={currentDate}
         onPrevMonth={prevMonth}
         onNextMonth={nextMonth}
       />
-
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-px bg-gray-200">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
           <div
             key={day}
-            className="text-center font-semibold p-2 text-gray-600"
+            className="bg-gray-50 p-2 text-center text-xs font-semibold uppercase tracking-wide text-gray-700"
           >
             {day}
           </div>
         ))}
-      </div>
+        {days.map((day) => {
+          const dayEvents = events.filter((event) => {
+            const startDate = new Date(event.start_date);
+            const endDate = new Date(event.end_date);
+            const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
+            return dateRange.some(d => isSameDay(d, day));
+          });
 
-      <div className="grid grid-cols-7 gap-1">
-        {days.map((day) => (
-          <CalendarDay
-            key={day.toISOString()}
-            day={day}
-            currentDate={currentDate}
-            events={getEventsForDate(day)}
-            isVipEvent={isVipEvent}
-            onDateClick={onDateClick}
-          />
-        ))}
+          return (
+            <CalendarDay
+              key={day.toISOString()}
+              day={day}
+              currentMonth={currentDate}
+              events={dayEvents}
+              isVipEvent={isVipEvent}
+              onClick={() => onDateClick(day)}
+            />
+          );
+        })}
       </div>
     </div>
   );
