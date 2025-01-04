@@ -71,6 +71,7 @@ export const SignIn = () => {
         return;
       }
 
+      // The onAuthStateChange listener will handle the successful sign-in
       console.log("Sign in successful:", data);
       
     } catch (error) {
