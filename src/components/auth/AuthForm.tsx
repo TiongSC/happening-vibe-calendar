@@ -54,7 +54,7 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel className="text-left">Username</FormLabel>
                 <FormControl>
                   <Input placeholder="Choose a username" {...field} />
                 </FormControl>
@@ -68,7 +68,7 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="text-left">Email</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your email" {...field} />
               </FormControl>
@@ -81,7 +81,7 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel className="text-left">Password</FormLabel>
               <FormControl>
                 <Input
                   type="password"

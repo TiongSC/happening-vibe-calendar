@@ -28,7 +28,6 @@ export const SignIn = () => {
           toast({
             title: "Error",
             description: "Failed to fetch user profile",
-            duration: 5000,
             variant: "destructive",
           });
           return;
@@ -42,6 +41,10 @@ export const SignIn = () => {
         } else {
           console.log("Username found, redirecting to home...");
           navigate('/');
+          toast({
+            title: "Welcome back!",
+            description: "Successfully signed in",
+          });
         }
       }
     });
@@ -63,7 +66,6 @@ export const SignIn = () => {
         toast({
           title: "Sign In Error",
           description: error.message,
-          duration: 5000,
           variant: "destructive",
         });
         return;
@@ -71,22 +73,12 @@ export const SignIn = () => {
 
       console.log("Sign in response:", data);
       
-      if (data.user) {
-        console.log("Sign in successful for user:", data.user.id);
-        toast({
-          title: "Success",
-          description: "Signed in successfully",
-          duration: 3000,
-        });
-      }
-
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
       const authError = error as AuthError;
       toast({
         title: "Error",
         description: authError.message,
-        duration: 5000,
         variant: "destructive",
       });
     }
