@@ -54,7 +54,7 @@ export const Footer = () => {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={() => window.open("https://www.facebook.com", "_blank")}
+                  onClick={() => window.open("https://www.facebook.com/happeningvibe.HV", "_blank")}
                 >
                   <Mail className="h-5 w-5" />
                 </Button>
