@@ -71,7 +71,7 @@ export const SignIn = () => {
         return;
       }
 
-      console.log("Sign in response:", data);
+      console.log("Sign in successful:", data);
       
     } catch (error) {
       console.error("Unexpected error during sign in:", error);
