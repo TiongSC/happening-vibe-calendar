@@ -40,10 +40,25 @@ const AccountSettings = () => {
   const updateProfileMutation = useMutation({
     mutationFn: async (updates: { username: string; phone_number: string }) => {
       if (!user?.id) throw new Error("No user");
+      
+      // First check if username is already taken (if username was changed)
+      if (updates.username !== profile?.username) {
+        const { data: existingUser } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("username", updates.username)
+          .single();
+
+        if (existingUser) {
+          throw new Error("Username is already taken");
+        }
+      }
+
       const { error } = await supabase
         .from("profiles")
         .update(updates)
         .eq("id", user.id);
+      
       if (error) throw error;
     },
     onSuccess: () => {
@@ -53,13 +68,12 @@ const AccountSettings = () => {
         description: "Your profile has been successfully updated.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       });
-      console.error("Error updating profile:", error);
     },
   });
 
