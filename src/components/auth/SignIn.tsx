@@ -4,19 +4,42 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 export const SignIn = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         navigate('/');
+      } else if (event === 'USER_UPDATED') {
+        // Handle email verification success
+        if (session?.user.email_confirmed_at) {
+          toast({
+            title: "Email Verified",
+            description: "Your email has been successfully verified. You can now sign in.",
+            duration: 5000,
+          });
+        }
       }
     });
 
+    // Check for email verification status from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error_description') === 'Email not confirmed') {
+      toast({
+        title: "Email Verification Required",
+        description: "Please check your email and click the verification link before signing in.",
+        duration: 5000,
+        variant: "destructive",
+      });
+    }
+
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
