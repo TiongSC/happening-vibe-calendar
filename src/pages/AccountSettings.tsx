@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -27,39 +27,41 @@ const AccountSettings = () => {
         .maybeSingle();
       return data;
     },
-    enabled: !!user?.id,
-    onSettled: (data) => {
-      if (data) {
-        setUsername(data.username || "");
-        setPhoneNumber(data.phone_number || "");
-        setBirthday(data.birthday || "");
-      }
-    }
+    enabled: !!user?.id
   });
+
+  // Set form values when profile data is loaded
+  useEffect(() => {
+    if (profile) {
+      setUsername(profile.username || "");
+      setPhoneNumber(profile.phone_number || "");
+      setBirthday(profile.birthday || "");
+    }
+  }, [profile]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (updates: { username?: string; phone_number: string; birthday: string }) => {
       if (!user?.id) throw new Error("No user");
       
-      const finalUpdates: { username?: string; phone_number: string; birthday: string } = {
-        phone_number: updates.phone_number,
-        birthday: updates.birthday || null // Handle empty birthday string
-      };
-
+      // Check if username exists (if username is being updated)
       if (updates.username) {
-        // Check if username is already taken
         const { data: existingUser } = await supabase
           .from("profiles")
           .select("id")
           .eq("username", updates.username)
           .neq("id", user.id)
-          .maybeSingle(); // Use maybeSingle instead of single
+          .maybeSingle();
 
         if (existingUser) {
           throw new Error("This username is already taken. Please choose another one.");
         }
-        finalUpdates.username = updates.username;
       }
+
+      const finalUpdates: { username?: string; phone_number: string; birthday: string | null } = {
+        username: updates.username,
+        phone_number: updates.phone_number,
+        birthday: updates.birthday || null // Handle empty birthday string
+      };
 
       const { error } = await supabase
         .from("profiles")
