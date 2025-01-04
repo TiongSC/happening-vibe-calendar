@@ -7,6 +7,8 @@ import {
   endOfMonth,
   eachDayOfInterval,
   isSameDay,
+  startOfWeek,
+  endOfWeek,
 } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,7 +34,14 @@ export const Calendar = ({ events, onDateClick }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  
+  // Get the start of the week for the first day of the month
+  const calendarStart = startOfWeek(monthStart);
+  // Get the end of the week for the last day of the month
+  const calendarEnd = endOfWeek(monthEnd);
+  
+  // Get all days that should be displayed in the calendar
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
