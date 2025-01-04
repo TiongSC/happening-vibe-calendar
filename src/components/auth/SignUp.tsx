@@ -27,13 +27,12 @@ export const SignUp = () => {
     try {
       // First check if username exists
       if (username) {
-        const { data: existingUser, error: checkError } = await supabase
+        const { data: existingUsers, error: checkError } = await supabase
           .from('profiles')
           .select('username')
-          .eq('username', username)
-          .single();
+          .eq('username', username);
 
-        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        if (checkError) {
           toast({
             title: "Error",
             description: "Error checking username availability",
@@ -42,7 +41,7 @@ export const SignUp = () => {
           return;
         }
 
-        if (existingUser) {
+        if (existingUsers && existingUsers.length > 0) {
           toast({
             title: "Username Taken",
             description: "This username is already taken. Please choose another one.",
