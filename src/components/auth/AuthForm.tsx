@@ -5,7 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthHeader } from "./AuthHeader";
 import { useToast } from "@/hooks/use-toast";
 
-export const AuthForm = ({ mode }: { mode: "sign-in" | "sign-up" }) => {
+interface AuthFormProps {
+  mode: "sign-in" | "sign-up";
+}
+
+export const AuthForm = ({ mode }: AuthFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
