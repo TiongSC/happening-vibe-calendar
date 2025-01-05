@@ -5,30 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Lock, User, Home } from "lucide-react";
+import { Mail, Lock, Home } from "lucide-react";
 
 export const SignUp = () => {
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const checkExistingUsername = async () => {
-    const { data: existingUsername, error } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("username", username)
-      .maybeSingle();
+  const checkExistingEmail = async (email: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: "dummy-password-for-check",
+    });
 
-    if (error) {
-      throw new Error("Error checking username");
-    }
-
-    if (existingUsername) {
-      throw new Error("Username already exists");
-    }
+    // If we get an error about invalid credentials, it means the email exists
+    // If we get any other error or no error, the email doesn't exist
+    return error?.message.includes("Invalid login credentials") || data.user !== null;
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -36,34 +30,29 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      await checkExistingUsername();
+      // Check if email exists
+      const emailExists = await checkExistingEmail(email);
+      
+      if (emailExists) {
+        toast({
+          title: "Error",
+          description: "This email is already registered. Please use a different email or sign in.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
 
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            username: username,
-          },
-        },
       });
 
       if (signUpError) {
-        if (signUpError.message.includes("already registered")) {
-          throw new Error("Email already exists");
-        }
         throw signUpError;
       }
 
-      // Update the profile with the username
       if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ username: username })
-          .eq('id', data.user.id);
-
-        if (profileError) throw profileError;
-
         toast({
           title: "Sign up successful",
           description: "Please check your email to verify your account.",
@@ -94,26 +83,6 @@ export const SignUp = () => {
         </Button>
         <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
         <form onSubmit={handleSignUp} className="space-y-4">
-          <div className="space-y-2">
-            <Label
-              htmlFor="username"
-              className="text-sm font-medium text-left block"
-            >
-              Username
-            </Label>
-            <div className="relative">
-              <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              <Input
-                id="username"
-                type="text"
-                placeholder="Choose a username"
-                className="pl-10"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-left block">
               Email
