@@ -43,7 +43,7 @@ export const SignUp = () => {
         password,
         options: {
           data: {
-            username,
+            username: username,
           },
         },
       });
@@ -55,7 +55,15 @@ export const SignUp = () => {
         throw signUpError;
       }
 
+      // Update the profile with the username
       if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ username: username })
+          .eq('id', data.user.id);
+
+        if (profileError) throw profileError;
+
         toast({
           title: "Sign up successful",
           description: "Please check your email to verify your account.",
