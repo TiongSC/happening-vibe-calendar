@@ -1,6 +1,4 @@
 import { Routes, Route } from "react-router-dom";
-import { SignIn } from "@/components/auth/SignIn";
-import { SignUp } from "@/components/auth/SignUp";
 import { VerifyEmail } from "@/pages/VerifyEmail";
 import { SetUsername } from "@/pages/SetUsername";
 import Index from "@/pages/Index";
@@ -16,8 +14,6 @@ export function AppRoutes() {
     <QueryClientProvider client={queryClient}>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<SignUp />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/set-username" element={<SetUsername />} />
         <Route path="/about-us" element={<AboutUs />} />
