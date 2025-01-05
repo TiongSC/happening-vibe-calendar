@@ -14,51 +14,31 @@ export const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const checkExistingEmail = async (email: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('username', email)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error checking email:', error);
-      return false;
-    }
-
-    return data !== null;
-  };
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Check if email exists
-      const emailExists = await checkExistingEmail(email);
-      
-      if (emailExists) {
-        toast({
-          title: "Error",
-          description: "This email is already registered. Please use a different email or sign in.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (signUpError) {
-        throw signUpError;
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          toast({
+            title: "Error",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
       }
 
       if (data.user) {
         toast({
-          title: "Sign up successful",
+          title: "Success",
           description: "Please check your email to verify your account.",
         });
         navigate("/verify-email");
@@ -66,7 +46,7 @@ export const SignUp = () => {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to sign up",
+        description: error.message || "An error occurred during sign up",
         variant: "destructive",
       });
     } finally {
@@ -116,7 +96,7 @@ export const SignUp = () => {
               <Input
                 id="password"
                 type="password"
-                placeholder="Choose a password"
+                placeholder="Enter your password"
                 className="pl-10"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
