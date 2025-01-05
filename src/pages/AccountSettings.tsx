@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,9 +107,9 @@ const AccountSettings = () => {
           <div className="bg-white p-6 rounded-lg shadow">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="email" className="text-sm font-medium text-left block mb-1">
                   Email
-                </label>
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -119,9 +120,9 @@ const AccountSettings = () => {
               </div>
 
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="username" className="text-sm font-medium text-left block mb-1">
                   Username
-                </label>
+                </Label>
                 <Input
                   id="username"
                   type="text"
@@ -132,9 +133,9 @@ const AccountSettings = () => {
               </div>
 
               <div>
-                <label htmlFor="birthday" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="birthday" className="text-sm font-medium text-left block mb-1">
                   Birthday
-                </label>
+                </Label>
                 <Input
                   id="birthday"
                   type="date"
@@ -144,9 +145,9 @@ const AccountSettings = () => {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                <Label htmlFor="phone" className="text-sm font-medium text-left block mb-1">
                   Phone Number
-                </label>
+                </Label>
                 <Input
                   id="phone"
                   type="tel"

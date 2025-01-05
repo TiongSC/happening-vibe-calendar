@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, Lock, User } from "lucide-react";
@@ -39,7 +40,7 @@ export const SignUp = () => {
       await checkExistingUsername();
 
       // Try to sign up - this will automatically check for existing email
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -56,11 +57,14 @@ export const SignUp = () => {
         throw signUpError;
       }
 
-      toast({
-        title: "Sign up successful",
-        description: "Please check your email to verify your account.",
-      });
-      navigate("/verify-email");
+      // Only proceed to verify-email if signup was successful
+      if (data.user) {
+        toast({
+          title: "Sign up successful",
+          description: "Please check your email to verify your account.",
+        });
+        navigate("/verify-email");
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -78,9 +82,9 @@ export const SignUp = () => {
         <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            <Label htmlFor="username" className="text-sm font-medium text-left block">
               Username
-            </label>
+            </Label>
             <div className="relative">
               <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <Input
@@ -95,9 +99,9 @@ export const SignUp = () => {
             </div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <Label htmlFor="email" className="text-sm font-medium text-left block">
               Email
-            </label>
+            </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <Input
@@ -112,9 +116,9 @@ export const SignUp = () => {
             </div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <Label htmlFor="password" className="text-sm font-medium text-left block">
               Password
-            </label>
+            </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <Input
