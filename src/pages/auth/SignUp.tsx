@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User, Home } from "lucide-react";
 
 export const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -36,10 +36,8 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      // First check if username exists
       await checkExistingUsername();
 
-      // Try to sign up - this will automatically check for existing email
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -57,7 +55,6 @@ export const SignUp = () => {
         throw signUpError;
       }
 
-      // Only proceed to verify-email if signup was successful
       if (data.user) {
         toast({
           title: "Sign up successful",
@@ -78,11 +75,22 @@ export const SignUp = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
+      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/")}
+          className="absolute right-4 top-4"
+        >
+          <Home className="h-5 w-5" />
+        </Button>
         <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
         <form onSubmit={handleSignUp} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-sm font-medium text-left block">
+            <Label
+              htmlFor="username"
+              className="text-sm font-medium text-left block"
+            >
               Username
             </Label>
             <div className="relative">
@@ -116,7 +124,10 @@ export const SignUp = () => {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-left block">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-left block"
+            >
               Password
             </Label>
             <div className="relative">
@@ -138,7 +149,11 @@ export const SignUp = () => {
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <Button variant="link" onClick={() => navigate("/sign-in")} className="p-0">
+          <Button
+            variant="link"
+            onClick={() => navigate("/sign-in")}
+            className="p-0"
+          >
             Sign In
           </Button>
         </p>

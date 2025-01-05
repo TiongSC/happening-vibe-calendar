@@ -5,36 +5,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Lock, Home } from "lucide-react";
+import { Mail, Home } from "lucide-react";
 
-export const SignIn = () => {
+export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/sign-in`,
       });
 
       if (error) throw error;
 
       toast({
-        title: "Sign in successful",
-        description: "Welcome back!",
+        title: "Reset password email sent",
+        description: "Please check your email to reset your password.",
       });
-      navigate("/");
+      navigate("/sign-in");
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to sign in",
+        description: error.message || "Failed to send reset password email",
         variant: "destructive",
       });
     } finally {
@@ -53,8 +51,8 @@ export const SignIn = () => {
         >
           <Home className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-center mb-6">Sign In</h1>
-        <form onSubmit={handleSignIn} className="space-y-4">
+        <h1 className="text-2xl font-bold text-center mb-6">Reset Password</h1>
+        <form onSubmit={handleResetPassword} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-left block">
               Email
@@ -72,48 +70,18 @@ export const SignIn = () => {
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label
-              htmlFor="password"
-              className="text-sm font-medium text-left block"
-            >
-              Password
-            </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                className="pl-10"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              variant="link"
-              onClick={() => navigate("/forgot-password")}
-              className="p-0 h-auto text-sm"
-              type="button"
-            >
-              Forgot password?
-            </Button>
-          </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Sending..." : "Send Reset Link"}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
+          Remember your password?{" "}
           <Button
             variant="link"
-            onClick={() => navigate("/sign-up")}
+            onClick={() => navigate("/sign-in")}
             className="p-0"
           >
-            Sign Up
+            Sign In
           </Button>
         </p>
       </div>
