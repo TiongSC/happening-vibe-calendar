@@ -6,6 +6,8 @@ import AboutUs from "@/pages/AboutUs";
 import FAQ from "@/pages/FAQ";
 import AccountSettings from "@/pages/AccountSettings";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SignIn } from "@/pages/auth/SignIn";
+import { SignUp } from "@/pages/auth/SignUp";
 
 const queryClient = new QueryClient();
 
@@ -14,6 +16,8 @@ export function AppRoutes() {
     <QueryClientProvider client={queryClient}>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/set-username" element={<SetUsername />} />
         <Route path="/about-us" element={<AboutUs />} />
