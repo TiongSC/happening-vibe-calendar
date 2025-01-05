@@ -19,22 +19,31 @@ export const SignIn = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      toast({
-        title: "Sign in successful",
-        description: "Welcome back!",
-      });
-      navigate("/");
+      if (data?.user) {
+        toast({
+          title: "Success",
+          description: "Welcome back!",
+        });
+        navigate("/");
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to sign in",
+        description: error.message || "An error occurred while signing in",
         variant: "destructive",
       });
     } finally {
