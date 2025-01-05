@@ -15,14 +15,18 @@ export const SignUp = () => {
   const { toast } = useToast();
 
   const checkExistingEmail = async (email: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: "dummy-password-for-check",
-    });
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', email)
+      .maybeSingle();
 
-    // If we get an error about invalid credentials, it means the email exists
-    // If we get any other error or no error, the email doesn't exist
-    return error?.message.includes("Invalid login credentials") || data.user !== null;
+    if (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+
+    return data !== null;
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
