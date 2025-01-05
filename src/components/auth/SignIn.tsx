@@ -11,79 +11,49 @@ export const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Handle auth state changes
+  // Monitor authentication state
   useEffect(() => {
-    const handleAuthChange = async (event: string, session: any) => {
-      console.log("Auth state changed:", event, session);
-
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.id) {
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
+        // Check if user has a username set
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session.user.id)
+          .single();
 
-          if (profileError) {
-            console.error("Error fetching profile:", profileError);
-            toast({
-              title: "Error",
-              description: "Failed to fetch user profile",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          if (!profile?.username) {
-            console.log("No username found, redirecting to set-username...");
-            navigate('/set-username');
-          } else {
-            console.log("Username found, redirecting to home...");
-            navigate('/');
-            toast({
-              title: "Welcome back!",
-              description: "Successfully signed in",
-            });
-          }
-        } catch (error) {
-          console.error("Error in auth change handler:", error);
+        if (!profile?.username) {
+          navigate('/set-username');
+        } else {
+          navigate('/');
           toast({
-            title: "Error",
-            description: "An unexpected error occurred",
-            variant: "destructive",
+            title: "Success",
+            description: "Signed in successfully",
           });
         }
       }
-    };
+    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
-      console.log("Attempting sign in with email:", email);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error("Sign in error:", error);
         toast({
-          title: "Sign In Error",
+          title: "Sign in failed",
           description: error.message,
           variant: "destructive",
         });
-        return;
       }
-
-      console.log("Sign in successful:", data);
-      // Auth state change listener will handle navigation and success toast
-      
     } catch (error) {
-      console.error("Unexpected error during sign in:", error);
       const authError = error as AuthError;
       toast({
         title: "Error",
@@ -94,20 +64,22 @@ export const SignIn = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
-      <AuthHeader mode="sign-in" />
-      <AuthForm mode="sign-in" onSubmit={handleSignIn} />
-      <div className="mt-4 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-300">
-          Don't have an account yet?{" "}
-          <Button
-            variant="link"
-            className="p-0 h-auto font-semibold"
-            onClick={() => navigate("/sign-up")}
-          >
-            Sign up
-          </Button>
-        </p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <AuthHeader mode="sign-in" />
+        <AuthForm mode="sign-in" onSubmit={handleSignIn} />
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Don't have an account yet?{" "}
+            <Button
+              variant="link"
+              className="p-0 h-auto font-semibold"
+              onClick={() => navigate("/sign-up")}
+            >
+              Sign up
+            </Button>
+          </p>
+        </div>
       </div>
     </div>
   );
