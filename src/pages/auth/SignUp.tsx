@@ -14,27 +14,19 @@ export const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const checkExistingUser = async () => {
-    // Check for existing username
-    const { data: existingUsername } = await supabase
+  const checkExistingUsername = async () => {
+    const { data: existingUsername, error } = await supabase
       .from("profiles")
       .select("username")
       .eq("username", username)
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("Error checking username");
+    }
 
     if (existingUsername) {
       throw new Error("Username already exists");
-    }
-
-    // Check for existing email
-    const { data: existingUser } = await supabase.auth.admin.listUsers({
-      filters: {
-        email: email,
-      },
-    });
-
-    if (existingUser && existingUser.users.length > 0) {
-      throw new Error("Email already exists");
     }
   };
 
@@ -43,9 +35,11 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      await checkExistingUser();
+      // First check if username exists
+      await checkExistingUsername();
 
-      const { error } = await supabase.auth.signUp({
+      // Try to sign up - this will automatically check for existing email
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -55,7 +49,12 @@ export const SignUp = () => {
         },
       });
 
-      if (error) throw error;
+      if (signUpError) {
+        if (signUpError.message.includes("already registered")) {
+          throw new Error("Email already exists");
+        }
+        throw signUpError;
+      }
 
       toast({
         title: "Sign up successful",
