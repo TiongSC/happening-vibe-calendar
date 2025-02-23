@@ -89,7 +89,7 @@ export const CreateEventDialog = ({
 
       // Decrement remaining events for non-admin users
     if (user?.id && !profile?.is_admin) {
-      await supabase.rpc('decrement_events_remaining', {
+      await supabase.rpc('events_remaining_today', {
         user_id: user.id
       });
     }
