@@ -37,7 +37,7 @@ export const CreateEventDialog = ({
     <Dialog isOpen={isOpen} onClose={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Event</DialogTitle>
+          <DialogTitle>Create Event on {format(selectedDate, "MMMM dd, yyyy")}</DialogTitle>
         </DialogHeader>
         <EventForm 
           title={title} 

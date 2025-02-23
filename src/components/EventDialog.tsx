@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { useAuth } from "./AuthProvider";
 import { EventItem } from "./EventItem";
+import { useState } from "react";
 
 interface Event {
   id: string;
@@ -34,19 +35,20 @@ export const EventDialog = ({
   onDeleteEvent,
 }: EventDialogProps) => {
   const { user } = useAuth();
+  const [selectedDate, setSelectedDate] = useState(date);
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Events on {format(date, "MMMM dd, yyyy")}</DialogTitle>
+          <DialogTitle>Events on {format(selectedDate, "MMMM dd, yyyy")}</DialogTitle>
         </DialogHeader>
         <ScrollArea>
           {events.map((event) => (
             <EventItem key={event.id} event={event} onDeleteEvent={onDeleteEvent} />
           ))}
         </ScrollArea>
-        <Button onClick={() => onCreateClick(date)}>
+        <Button onClick={() => onCreateClick(selectedDate)}>
           <Plus size={16} /> Create Event
         </Button>
       </DialogContent>
