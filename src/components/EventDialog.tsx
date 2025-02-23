@@ -89,7 +89,6 @@ export const EventDialog = ({
         <div className="flex justify-end">
           {user && (
             <Button 
-              //onClick={() => onCreateClick(date)} 
               onClick={() => onCreateClick(date)}
               size="icon"
               className="rounded-full"
