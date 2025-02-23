@@ -90,7 +90,7 @@ export const EventDialog = ({
           {user && (
             <Button 
               'onClick={() => onCreateClick(date)} '
-              onClick={() => onCreateClick(date)} Create Event
+              onClick={() => onCreateClick(date)}
               size="icon"
               className="rounded-full"
             >
