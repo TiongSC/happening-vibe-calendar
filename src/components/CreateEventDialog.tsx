@@ -96,7 +96,7 @@ export const CreateEventDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog isopen={isOpen} onClose={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
