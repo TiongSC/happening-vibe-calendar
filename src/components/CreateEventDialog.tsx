@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -31,14 +32,6 @@ export const CreateEventDialog = ({
   const [endDate, setEndDate] = useState(format(selectedDate, "yyyy-MM-dd"));
   const [endTime, setEndTime] = useState("17:00");
   const { user } = useAuth();
-
-    // Ensure the selectedDate is updated when dialog opens
-    useEffect(() => {
-      if (isOpen) {
-        setStartDate(format(selectedDate, "yyyy-MM-dd"));
-        setEndDate(format(selectedDate, "yyyy-MM-dd"));
-      }
-    }, [isOpen, selectedDate]);
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -96,7 +89,7 @@ export const CreateEventDialog = ({
   };
 
   return (
-    <Dialog isopen={isOpen} onClose={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
