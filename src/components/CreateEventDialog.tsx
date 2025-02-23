@@ -86,6 +86,13 @@ export const CreateEventDialog = ({
       startDate: start,
       endDate: end,
     });
+
+      // Decrement remaining events for non-admin users
+    if (user?.id && !profile?.is_admin) {
+      await supabase.rpc('decrement_events_remaining', {
+        user_id: user.id
+      });
+    }
     
     await Promise.all([refetchProfile(), refetchTodayEvents()]);
     
