@@ -32,6 +32,14 @@ export const CreateEventDialog = ({
   const [endTime, setEndTime] = useState("17:00");
   const { user } = useAuth();
 
+    // Ensure the selectedDate is updated when dialog opens
+    useEffect(() => {
+      if (isOpen) {
+        setStartDate(format(selectedDate, "yyyy-MM-dd"));
+        setEndDate(format(selectedDate, "yyyy-MM-dd"));
+      }
+    }, [isOpen, selectedDate]);
+
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile", user?.id],
     queryFn: async () => {
