@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,13 @@ export const CreateEventDialog = ({
   const [endDate, setEndDate] = useState(format(selectedDate, "yyyy-MM-dd"));
   const [endTime, setEndTime] = useState("17:00");
   const { user } = useAuth();
+
+    // Add this useEffect to update dates when selectedDate changes
+    useEffect(() => {
+      const formattedDate = format(selectedDate, "yyyy-MM-dd");
+      setStartDate(formattedDate);
+      setEndDate(formattedDate);
+    }, [selectedDate]);
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile", user?.id],
